@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Cityflo Captain Certificate Engine</title>
+<link rel="stylesheet" href="app.css">
+</head>
+<body>
+
+<header class="top">
+  <div class="wrap">
+    <div class="brand">
+      <span class="mark"></span>
+      <div>
+        <h1>Captain Certificate Engine</h1>
+        <p>Upload a CSV, get every captain's Certificate of Excellence back as one ZIP.</p>
+      </div>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <section class="card">
+    <div id="drop" class="drop" tabindex="0" role="button" aria-label="Choose or drop a CSV file">
+      <strong>Drop your CSV here</strong>
+      <span>or click to choose a file</span>
+      <em id="fileName"></em>
+    </div>
+    <input id="csv" type="file" accept=".csv,text/csv" hidden>
+    <p id="status" class="status">Loading fonts...</p>
+  </section>
+
+  <section id="setup" class="card" hidden>
+    <h2>1. Which column is which?</h2>
+    <div id="mapping" class="mapping"></div>
+
+    <h2>2. Output</h2>
+    <div class="options">
+      <div class="field">
+        <label>Formats</label>
+        <div class="checks">
+          <label class="check"><input type="checkbox" id="outPdf" checked> PDF</label>
+          <label class="check"><input type="checkbox" id="outPng" checked> PNG</label>
+        </div>
+      </div>
+      <div class="field">
+        <label for="quality">Quality</label>
+        <select id="quality">
+          <option value="print">Print &mdash; 300 dpi</option>
+          <option value="standard" selected>Standard &mdash; 200 dpi</option>
+          <option value="light">Light &mdash; 150 dpi, smallest ZIP</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="dateText">Date printed on the certificate</label>
+        <input id="dateText" type="text" placeholder="03 SEP 2026" autocomplete="off">
+      </div>
+    </div>
+
+    <h2>3. Generate</h2>
+    <button id="go" class="go">Generate certificates &amp; download ZIP</button>
+    <div id="progressWrap" class="progress" hidden>
+      <div class="track"><div id="bar" class="bar"></div></div>
+      <p id="progressText"></p>
+    </div>
+    <p class="hint">Nothing leaves this browser &mdash; the CSV is read, rendered and zipped on your own machine.</p>
+  </section>
+
+  <section class="card">
+    <h2>Preview</h2>
+    <p id="previewNote" class="muted">Drop a CSV to see the first certificate.</p>
+    <img id="preview" class="preview" alt="Certificate preview" hidden>
+  </section>
+
+  <details class="card">
+    <summary>CSV format</summary>
+    <p>One row per captain. Headers are matched automatically; anything unusual you can remap above.</p>
+<pre>captain_name,tag,achievement
+Ravi Kumar,Punctuality Pro,100% on-time across 62 trips this month
+Sunil Yadav,Elite Captain,perfect 100/100 score with zero complaints</pre>
+    <p><a href="sample-captains.csv" download>Download a sample CSV</a></p>
+  </details>
+
+</main>
+
+<script src="vendor/papaparse.min.js"></script>
+<script src="vendor/jszip.min.js"></script>
+<script src="vendor/jspdf.umd.min.js"></script>
+<script type="module" src="js/app.js"></script>
+</body>
+</html>

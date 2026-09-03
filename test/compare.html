@@ -1,0 +1,19 @@
+<!DOCTYPE html><meta charset="utf-8">
+<style>html,body{margin:0;background:#fff}#out{display:block;width:100%}</style>
+<img id="out">
+<script type="module">
+import {buildCertificateSVG, rasterise, ensureFonts} from '../js/certificate.js';
+await ensureFonts();
+const q = new URLSearchParams(location.search);
+const W = Number(q.get("w") || 1287);
+const svg = buildCertificateSVG({
+  name: q.get('name') ?? '',
+  tag: q.get('tag') ?? '',
+  achievement: q.get('achv') ?? '',
+  date: q.get('date') ?? '',
+  placeholders: q.get('ph') === '1',
+});
+const c = await rasterise(svg, W/841.92);
+document.getElementById('out').src = c.toDataURL('image/png');
+document.title = 'ready';
+</script>

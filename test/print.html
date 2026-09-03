@@ -1,0 +1,16 @@
+<!DOCTYPE html><meta charset="utf-8">
+<style>
+  @page{size:841.92pt 594.96pt;margin:0}
+  html,body{margin:0;padding:0}
+  #host svg{display:block}
+</style>
+<div id="host"></div>
+<script type="module">
+import {buildCertificateSVG, ensureFonts} from '../js/certificate.js';
+await ensureFonts();
+const q=new URLSearchParams(location.search);
+document.getElementById('host').innerHTML = buildCertificateSVG({
+  name:q.get('name')??'', tag:q.get('tag')??'', achievement:q.get('achv')??'',
+  date:q.get('date')??'', placeholders:q.get('ph')==='1'});
+document.title='ready';
+</script>
