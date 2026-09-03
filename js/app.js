@@ -101,6 +101,7 @@ function loadFile(file) {
       $('fileName').textContent = `${file.name} · ${rows.length} row${rows.length === 1 ? '' : 's'}`;
       $('step2').hidden = false;
       $('step3').hidden = false;
+      $('step4').hidden = false;
       $('summary').hidden = true;
       $('go').disabled = false;
 
@@ -177,6 +178,14 @@ function buildMapping() {
 const repaintSamples = () => {
   for (const f of $('mapping').children) f._paint?.();
 };
+
+/** Show the exact lines the certificate will carry, so the fields are unambiguous. */
+function echoWording() {
+  const period = $('periodText').value.trim().toUpperCase();
+  $('periodEcho').textContent = period ? `AWARDED FOR ${period}` : 'AWARDED FOR';
+  const date = $('dateText').value.trim().toUpperCase();
+  $('dateEcho').textContent = date || '(no date printed)';
+}
 
 /* ---------- stage ---------- */
 
@@ -335,6 +344,7 @@ function reset() {
   $('fileChip').hidden = true;
   $('step2').hidden = true;
   $('step3').hidden = true;
+  $('step4').hidden = true;
   $('summary').hidden = true;
   $('progressWrap').hidden = true;
   $('bar').style.width = '0';
@@ -385,8 +395,10 @@ function wire() {
 
   $('dateText').value = today();
   $('periodText').value = lastMonth();
-  $('dateText').addEventListener('input', refreshStage);
-  $('periodText').addEventListener('input', refreshStage);
+  for (const id of ['dateText', 'periodText']) {
+    $(id).addEventListener('input', () => { echoWording(); refreshStage(); });
+  }
+  echoWording();
   $('go').addEventListener('click', generate);
   $('againBtn').addEventListener('click', download);
   $('resetBtn').addEventListener('click', reset);

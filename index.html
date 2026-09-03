@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Cityflo — Captain Certificate Engine</title>
 <meta name="description" content="Upload a CSV of Cityflo captains, get every Certificate of Excellence back as one ZIP.">
-<link rel="stylesheet" href="app.css?v=6">
+<link rel="stylesheet" href="app.css?v=7">
 </head>
 <body class="locked">
 
@@ -106,9 +106,26 @@
         </div>
       </section>
 
-      <!-- 3 · output -->
+      <!-- 3 · wording -->
       <section class="step" id="step3" hidden>
-        <div class="stepHead"><span class="num">3</span><h2>Output</h2></div>
+        <div class="stepHead"><span class="num">3</span><h2>Month &amp; date</h2></div>
+        <div class="stepBody">
+          <div class="field">
+            <label for="periodText">Awarded for &mdash; month &amp; year</label>
+            <input id="periodText" type="text" placeholder="AUGUST 26" autocomplete="off">
+            <p class="sample"><b>&rarr;</b><i id="periodEcho"></i></p>
+          </div>
+          <div class="field">
+            <label for="dateText">Date &mdash; day, month, year</label>
+            <input id="dateText" type="text" placeholder="07 SEPTEMBER, 2026" autocomplete="off">
+            <p class="sample"><b>&rarr;</b><i id="dateEcho"></i></p>
+          </div>
+        </div>
+      </section>
+
+      <!-- 4 · output -->
+      <section class="step" id="step4" hidden>
+        <div class="stepHead"><span class="num">4</span><h2>Output</h2></div>
         <div class="stepBody">
           <div class="field">
             <label>Formats</label>
@@ -124,14 +141,6 @@
               <label><input type="radio" name="q" value="standard" checked><span>200</span></label>
               <label><input type="radio" name="q" value="print"><span>300&#8202;dpi</span></label>
             </div>
-          </div>
-          <div class="field">
-            <label for="periodText">Awarded for</label>
-            <input id="periodText" type="text" placeholder="AUGUST 26" autocomplete="off">
-          </div>
-          <div class="field">
-            <label for="dateText">Date on the certificate</label>
-            <input id="dateText" type="text" placeholder="07 SEPTEMBER, 2026" autocomplete="off">
           </div>
         </div>
       </section>
