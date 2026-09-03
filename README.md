@@ -13,7 +13,7 @@ GitHub Pages and the whole ops team can use it from a link.
    value is shown under the picker so a wrong column is obvious at a glance.
 4. Flick through every captain with `←` / `→` before committing to a run; click
    the sheet to see it at actual size.
-5. Pick formats and quality, then **Generate** (or `⌘⏎`). The ZIP downloads, and
+6. Pick formats and quality, then **Generate** (or `⌘⏎`). The ZIP downloads, and
    a summary reports how many were made, how many files, how big, and which rows
    were skipped.
 

@@ -42,10 +42,21 @@ const guess = (headers, keys) => {
 const safeFilename = (s) => (String(s || '')
   .replace(/[\\/:*?"<>|]/g, ' ').replace(/\s+/g, ' ').trim() || 'captain').slice(0, 80);
 
+const MONTHS = ['JANUARY', 'FEBRUARY', 'MARCH', 'APRIL', 'MAY', 'JUNE',
+  'JULY', 'AUGUST', 'SEPTEMBER', 'OCTOBER', 'NOVEMBER', 'DECEMBER'];
+
+/** Day, month name, comma, year — "07 SEPTEMBER, 2026". */
 function today() {
   const d = new Date();
-  const m = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'][d.getMonth()];
-  return `${String(d.getDate()).padStart(2, '0')} ${m} ${d.getFullYear()}`;
+  return `${String(d.getDate()).padStart(2, '0')} ${MONTHS[d.getMonth()]}, ${d.getFullYear()}`;
+}
+
+/** The month being awarded for is the one just gone — "AUGUST 26". */
+function lastMonth() {
+  const d = new Date();
+  d.setDate(1);
+  d.setMonth(d.getMonth() - 1);
+  return `${MONTHS[d.getMonth()]} ${String(d.getFullYear()).slice(-2)}`;
 }
 
 const status = (msg, kind = '') => {
@@ -190,6 +201,7 @@ async function showRow(i) {
     tag: rowValue(row, 'tag'),
     achievement: rowValue(row, 'achievement'),
     date: $('dateText').value.trim(),
+    period: $('periodText').value.trim(),
     placeholders: true,
   }, 1.7, previewCache);
   if (token !== showToken) return;              // a newer row won the race
@@ -222,6 +234,7 @@ async function generate() {
 
   const scale = DPI[quality()] / 72;
   const date = $('dateText').value.trim();
+  const period = $('periodText').value.trim();
   const { jsPDF } = window.jspdf;
   const zip = new JSZip();
   const used = new Map();
@@ -245,6 +258,7 @@ async function generate() {
       tag: rowValue(row, 'tag'),
       achievement: rowValue(row, 'achievement'),
       date,
+      period,
     }, scale, outputCache);
 
     let base = `Certificate - ${safeFilename(name)}`;
@@ -370,7 +384,9 @@ function wire() {
   window.addEventListener('drop', (e) => loadFile(e.dataTransfer?.files?.[0]));
 
   $('dateText').value = today();
+  $('periodText').value = lastMonth();
   $('dateText').addEventListener('input', refreshStage);
+  $('periodText').addEventListener('input', refreshStage);
   $('go').addEventListener('click', generate);
   $('againBtn').addEventListener('click', download);
   $('resetBtn').addEventListener('click', reset);

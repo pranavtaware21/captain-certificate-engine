@@ -26,8 +26,7 @@ const C = {
 /* Type: family / weight / style / size(pt) / letter-spacing(pt), as measured. */
 const T = {
   eyebrow: { f: 'CFArchivo', w: 600, s: 'normal', size: 7.376, ls: 2.797 },
-  titleUp: { f: 'CFFraunces', w: 400, s: 'normal', size: 41.42, ls: 0 },
-  titleIt: { f: 'CFFraunces', w: 500, s: 'italic', size: 41.42, ls: 0 },
+  title:   { f: 'CFFraunces', w: 400, s: 'normal', size: 41.42, ls: 0 },
   lede:    { f: 'CFArchivo', w: 400, s: 'normal', size: 8.542, ls: 1.088 },
   name:    { f: 'CFFraunces', w: 500, s: 'italic', size: 28.73, ls: 0.098 },
   role:    { f: 'CFArchivo', w: 600, s: 'normal', size: 7.376, ls: 2.185 },
@@ -82,11 +81,10 @@ const L = {
 
 const FIXED = {
   eyebrow: 'CAPTAIN RECOGNITION PROGRAMME',
-  titleUp: 'Certificate of ',
-  titleIt: 'Excellence',
+  title: 'Certificate of Excellence',
   lede: 'THIS HONOUR IS PROUDLY PRESENTED TO',
   role: 'CITYFLO CAPTAIN',
-  awarded: 'AWARDED FOR',
+  awarded: 'AWARDED FOR',   // a period is appended when one is given
   sig: [
     { who: 'AUTHORISED SIGNATORY', sub: 'CITYFLO OPERATIONS' },
     { who: 'DATE', sub: '[DD MMM YYYY]' },
@@ -204,16 +202,8 @@ function staticParts() {
     text(CX, L.eyebrowBase, FIXED.eyebrow, T.eyebrow, C.goldDeep)
   );
 
-  // title: "Certificate of" upright ink + "Excellence" italic gold
-  const wUp = advance(FIXED.titleUp, T.titleUp);
-  const wIt = advance(FIXED.titleIt, T.titleIt);
-  const titleX = CX - (wUp + wIt) / 2;
-  p.push(
-    `<text x="${n(titleX)}" y="${n(L.titleBase)}" text-anchor="start" font-size="${T.titleUp.size}">`
-    + `<tspan font-family="${T.titleUp.f}" font-weight="${T.titleUp.w}" fill="${C.ink}">${esc(FIXED.titleUp)}</tspan>`
-    + `<tspan font-family="${T.titleIt.f}" font-weight="${T.titleIt.w}" font-style="italic" fill="${C.goldDeep}">${esc(FIXED.titleIt)}</tspan>`
-    + '</text>'
-  );
+  // title: one upright run, all in ink
+  p.push(text(CX, L.titleBase, FIXED.title, T.title, C.ink));
 
   // lede + role (the name's flanking rules are per-row: a very long name drops them)
   p.push(
@@ -252,7 +242,7 @@ function staticParts() {
 }
 
 /** The four per-captain bits: name, tag pill, achievement block, date. */
-function dynamicParts({ name = '', tag = '', achievement = '', date = '', placeholders = false } = {}) {
+function dynamicParts({ name = '', tag = '', achievement = '', date = '', period = '', placeholders = false } = {}) {
   const p = [];
 
   /* Name, flanked by the .ai's rules and gold diamonds. A longer name pushes
@@ -292,7 +282,12 @@ function dynamicParts({ name = '', tag = '', achievement = '', date = '', placeh
   const achvText = String(achievement || '').trim()
     || (placeholders ? 'the achievement — e.g. exceptional service & a flawless safety record' : '');
 
-  if (tagText || achvText) p.push(text(CX, L.awardedBase, FIXED.awarded, T.awarded, C.goldDeep));
+  if (tagText || achvText) {
+    const periodText = String(period || '').trim().toUpperCase();
+    const label = periodText ? `${FIXED.awarded} ${periodText}` : FIXED.awarded;
+    p.push(text(CX, L.awardedBase, label, { ...T.awarded, size: fitSize(label, T.awarded, L.achvMaxW, 5.5) },
+      C.goldDeep));
+  }
 
   if (tagText) {
     const tagT = { ...T.tagLine, size: fitSize(tagText, T.tagLine, L.achvMaxW, 11) };

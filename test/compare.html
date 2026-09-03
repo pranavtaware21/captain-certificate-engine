@@ -11,6 +11,7 @@ const svg = buildCertificateSVG({
   tag: q.get('tag') ?? '',
   achievement: q.get('achv') ?? '',
   date: q.get('date') ?? '',
+  period: q.get('period') ?? '',
   placeholders: q.get('ph') === '1',
 });
 const c = await rasterise(svg, W/841.92);
