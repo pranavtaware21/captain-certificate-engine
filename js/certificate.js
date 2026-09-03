@@ -40,11 +40,16 @@ const T = {
   pillar:  { f: 'CFArchivo', w: 600, s: 'normal', size: 7.055, ls: 1.012 },
 };
 
+/* Glyph extents (fraction of font size) for stacking the award block by ink,
+ * not by guesswork: ascender top of 'h' and descender bottom of 'p'. */
+const ASC_FRAUNCES = 0.7235;
+const DESC_FRAUNCES = 0.24;
+const ASC_ARCHIVO = 0.723;
+
 /* Baselines / rules / shapes, all measured off the v2 artwork.
- * AWARD_SHIFT drops the "Awarded for" block by 7pt when a tag pill is present,
- * to open up room for it under the role line. That shift is the only
- * structural difference from the .ai file; with no tag, nothing moves. */
-const AWARD_SHIFT = 7;
+ * The .ai has no slot for a tag, so the pill takes the top of the "Awarded for"
+ * block and the achievement line moves below it. That stacking is the only
+ * structural difference from the .ai; with no tag, the layout is the .ai's. */
 const L = {
   logo:       { x: 339.89, y: 62.25, w: 161.63, h: 52.11 },
   frame:      { x: 23.25, y: 23.26, w: 794.92, h: 548.19, sw: 1.5 },
@@ -60,7 +65,10 @@ const L = {
   nameInnerW:  247,          // clear space between the two gold diamonds
   nameOuterW:  560,          // full width once the rules and diamonds drop away
   roleBase:    297.45,
-  tag:         { top: 304.2, h: 15.5, padX: 11.5 },
+  tag:         { top: 331.5, h: 15.5, padX: 11.5 },   // top of the award block
+  achvGap:     8,            // pill bottom -> achievement ascender
+  paraGap:     12,           // award block bottom -> paragraph ascender
+  paraGapTight: 8,           // ... and when the achievement ran to two lines
   awardedBase: 323.98,
   achvBase:    348.88,
   achvMaxW:    468,
@@ -279,9 +287,18 @@ function dynamicParts({ name = '', tag = '', achievement = '', date = '', placeh
   }
   p.push(text(CX, L.nameBase, nameText, { ...T.name, size: nameSize }, C.goldDeep));
 
+  /* The award block, stacked under "Awarded for": the tag pill first, then the
+     achievement line(s) below it. Each piece pushes what follows down, so the
+     citation paragraph only moves when it has to. */
   const tagText = String(tag || '').trim().toUpperCase();
-  const shift = tagText ? AWARD_SHIFT : 0;
-  let paraShift = shift;
+  const achvText = String(achievement || '').trim()
+    || (placeholders ? 'the achievement — e.g. exceptional service & a flawless safety record' : '');
+
+  if (tagText || achvText) p.push(text(CX, L.awardedBase, FIXED.awarded, T.awarded, C.goldDeep));
+
+  let blockBottom = 0;      // lowest ink of the award block so far
+  let paraGap = L.paraGap;
+
   if (tagText) {
     const tagT = { ...T.tag, size: fitSize(tagText, T.tag, 240, 5.5) };
     const w = inkWidth(tagText, tagT) + 2 * L.tag.padX;
@@ -290,28 +307,30 @@ function dynamicParts({ name = '', tag = '', achievement = '', date = '', placeh
       `<rect x="${n(CX - w / 2)}" y="${n(L.tag.top)}" width="${n(w)}" height="${n(h)}" rx="${n(h / 2)}" fill="url(#cf-pill)"/>`,
       text(CX, L.tag.top + h / 2 + tagT.size * 0.35, tagText, tagT, '#ffffff')
     );
+    blockBottom = L.tag.top + h;
   }
 
-  // "Awarded for" + the achievement line(s); the block drops out with no achievement
-  const achvText = String(achievement || '').trim()
-    || (placeholders ? 'the achievement — e.g. exceptional service & a flawless safety record' : '');
   if (achvText) {
-    p.push(text(CX, L.awardedBase + shift, FIXED.awarded, T.awarded, C.goldDeep));
     let achvT = { ...T.achv };
     let lines = wrap(achvText, achvT, L.achvMaxW);
     while (lines.length > 2 && achvT.size > 10.5) {
       achvT = { ...achvT, size: achvT.size - 0.4 };
       lines = wrap(achvText, achvT, L.achvMaxW);
     }
+    // with a pill above it the line sits under the pill; on its own it keeps the .ai's slot
+    const firstBase = blockBottom
+      ? blockBottom + L.achvGap + achvT.size * ASC_FRAUNCES
+      : L.achvBase;
     const lead = achvT.size * 1.32;
-    const y0 = L.achvBase + shift - (lines.length - 1) * lead / 2;
-    lines.forEach((line, i) => p.push(text(CX, y0 + i * lead, line, achvT, C.ink)));
-    if (lines.length > 1) paraShift += 6;
+    lines.forEach((line, i) => p.push(text(CX, firstBase + i * lead, line, achvT, C.ink)));
+    blockBottom = firstBase + (lines.length - 1) * lead + achvT.size * DESC_FRAUNCES;
+    if (lines.length > 1) paraGap = L.paraGapTight;
   }
 
-  // the fixed citation paragraph moves with the block above it
+  // the citation paragraph holds the .ai's position unless the block above needs the room
+  const paraBase = Math.max(L.paraBase, blockBottom + paraGap + T.para.size * ASC_ARCHIVO);
   wrap(FIXED.para, T.para, L.paraMaxW).forEach((line, i) =>
-    p.push(text(CX, L.paraBase + paraShift + i * L.paraLead, line, T.para, C.inkSoft)));
+    p.push(text(CX, paraBase + i * L.paraLead, line, T.para, C.inkSoft)));
 
   const dateText = date ? String(date).trim().toUpperCase() : (placeholders ? FIXED.sig[1].sub : '');
   if (dateText) p.push(text(L.sigCx[1], L.sigSubBase, dateText, T.sigSub, C.rule));

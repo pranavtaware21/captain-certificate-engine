@@ -78,8 +78,10 @@ artwork cannot be filled in directly. It was rebuilt instead:
   Archivo (400 / 600), SIL OFL 1.1, subset to Latin and embedded as base64 woff2 so the
   output is identical offline and on any machine.
 
-The one structural change from the .ai: the tag pill. The source has no slot for it, so when
-a tag is present the "Awarded for" block drops 7 pt to make room. With no tag, nothing moves.
+The one structural change from the .ai: the tag pill. The source has no slot for it, so the
+award block is stacked — `AWARDED FOR`, then the pill, then the achievement line, then the
+citation. Each piece pushes what follows down by its own ink height, so the citation only
+moves when it has to; with no tag and a one-line achievement the layout is the .ai's exactly.
 
 ### Things worth knowing if you edit it
 
