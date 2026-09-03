@@ -29,8 +29,8 @@ Three fields drive the output; everything else on the certificate is fixed artwo
 | Field | Required | Notes |
 |---|---|---|
 | Name | yes | Rows with no name are skipped and reported |
-| Tag | no | 1–2 words. Renders as the gold pill under `CITYFLO CAPTAIN`. No tag → no pill |
-| Achievement | no | One short sentence. Wraps to two lines, shrinks if very long. Empty → the whole "Awarded for" block is left out |
+| Tag | no | 1–2 words. Takes the award block's display line, set large in gold Fraunces italic. Casing is used as given |
+| Achievement | no | One short sentence, printed on the line under the tag. Wraps to two lines, shrinks if very long. With no tag it moves up into the display line |
 
 Header names are matched loosely (`captain_name`, `name`, `captain`, `tag`, `badge`,
 `achievement`, `citation`, `reason`, …). Anything unusual you remap in the UI.
@@ -84,10 +84,11 @@ artwork cannot be filled in directly. It was rebuilt instead:
   Archivo (400 / 600), SIL OFL 1.1, subset to Latin and embedded as base64 woff2 so the
   output is identical offline and on any machine.
 
-The one structural change from the .ai: the tag pill. The source has no slot for it, so the
-award block is stacked — `AWARDED FOR`, then the pill, then the achievement line, then the
-citation. Each piece pushes what follows down by its own ink height, so the citation only
-moves when it has to; with no tag and a one-line achievement the layout is the .ai's exactly.
+The one structural change from the .ai: the award block has one display line in the source,
+and the tag takes it — `AWARDED FOR`, the tag in gold italic, the achievement on the line
+beneath, then the citation. Each piece pushes what follows down by its own ink height, so the
+citation only moves when it has to; with no tag the achievement keeps the display line and the
+layout is the .ai's exactly.
 
 ### Things worth knowing if you edit it
 
