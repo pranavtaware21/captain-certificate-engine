@@ -62,3 +62,21 @@ pre{margin-top:10px;background:#fdfbf6;border:1px solid var(--line);border-radiu
   font-size:12.5px;line-height:1.6;overflow-x:auto}
 
 @media (max-width:560px){.card{padding:16px}.top{padding:20px 0}}
+
+/* CSV format block */
+.fmt{margin-top:12px;overflow-x:auto;border:1px solid var(--line);border-radius:10px}
+.fmtTable{border-collapse:collapse;width:100%;min-width:520px;font-size:13px}
+.fmtTable th,.fmtTable td{text-align:left;padding:9px 12px;border-bottom:1px solid var(--line);white-space:nowrap}
+.fmtTable tr:last-child td{border-bottom:0}
+.fmtTable th{background:#fdf6e7;color:var(--gold-deep);font-weight:600;letter-spacing:.04em;
+  font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
+.fmtTable td{color:var(--ink-soft)}
+.rules{margin:14px 0 0;padding-left:18px;font-size:13.5px;color:var(--ink-soft);line-height:1.65}
+.rules b{color:var(--ink);font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12.5px}
+.dl{margin-top:14px;font-size:14px;display:flex;gap:9px;flex-wrap:wrap;align-items:center}
+.dl a{color:var(--gold-deep);font-weight:600}
+.dl span{color:var(--rule)}
+.small{margin-top:8px;font-size:12.5px}
+.small code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px;
+  background:#fdf6e7;border-radius:4px;padding:1px 5px;color:var(--gold-deep)}
+.status.warn{color:#8a5a12;font-weight:600}

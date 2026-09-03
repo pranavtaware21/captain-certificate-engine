@@ -60,7 +60,15 @@ function loadFile(file) {
       $('fileName').textContent = `${file.name} / ${rows.length} row${rows.length > 1 ? 's' : ''}`;
       buildMapping();
       $('setup').hidden = false;
-      status(`${rows.length} rows loaded. Check the column mapping, then generate.`, 'ok');
+      if (!state.map.name) {
+        status(`No name column found in ${headers.join(', ')}. Expected headers are name, tag, achievement `
+          + '(see the format above) — or pick the right column below.', 'warn');
+      } else {
+        const missing = ['tag', 'achievement'].filter((k) => !state.map[k]);
+        status(`${rows.length} row${rows.length === 1 ? '' : 's'} loaded.`
+          + (missing.length ? ` No ${missing.join(' or ')} column found — those bits will be left off.` : '')
+          + ' Check the mapping, then generate.', missing.length ? 'warn' : 'ok');
+      }
       refreshPreview();
     },
     error: (err) => status(`Could not read that file: ${err.message}`, 'bad'),

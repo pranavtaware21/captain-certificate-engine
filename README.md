@@ -15,8 +15,11 @@ GitHub Pages and the whole ops team can use it from a link.
 
 ### CSV
 
+Header row, then one row per captain. The format is shown on the page itself, with
+`template.csv` and a filled-in example downloadable from there.
+
 ```csv
-captain_name,tag,achievement
+name,tag,achievement
 Ravi Kumar,Punctuality Pro,100% on-time across 62 trips this month
 Sunil Yadav,Elite Captain,perfect 100 out of 100 with zero commuter complaints
 ```
@@ -98,7 +101,8 @@ js/background.js      background artwork extracted from the .ai
 js/logo.js            Cityflo wordmark
 js/fonts.js           embedded Fraunces + Archivo subsets
 vendor/               PapaParse, JSZip, jsPDF
-sample-captains.csv   example input
+template.csv          blank CSV with just the headers
+sample-captains.csv   filled-in example input
 ```
 
 Fonts are Fraunces and Archivo, both SIL Open Font License 1.1.

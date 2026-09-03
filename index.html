@@ -23,6 +23,40 @@
 <main class="wrap">
 
   <section class="card">
+    <h2>CSV format</h2>
+    <p class="muted">Three columns, one row per captain. First row must be the header.</p>
+    <div class="fmt">
+      <table class="fmtTable">
+        <thead>
+          <tr><th>name</th><th>tag</th><th>achievement</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Ravi Kumar</td>
+            <td>Punctuality Pro</td>
+            <td>100% on-time across 62 trips this month</td>
+          </tr>
+          <tr>
+            <td>Sunil Yadav</td>
+            <td>Elite Captain</td>
+            <td>perfect 100 out of 100 with zero commuter complaints</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <ul class="rules">
+      <li><b>name</b> — required. Prints as the captain's name. Rows with no name are skipped.</li>
+      <li><b>tag</b> — optional, 1&ndash;2 words. Prints as the gold pill. Leave blank for no pill.</li>
+      <li><b>achievement</b> — optional, one short sentence, lower case, no full stop. Leave blank to drop the &ldquo;Awarded for&rdquo; block.</li>
+    </ul>
+    <p class="dl">
+      <a href="template.csv" download>Download template.csv</a>
+      <span>&middot;</span>
+      <a href="sample-captains.csv" download>filled-in example (5 rows)</a>
+    </p>
+    <p class="muted small">Other header names work too (<code>captain_name</code>, <code>badge</code>, <code>citation</code>, <code>reason</code>&hellip;) &mdash; and you can remap any column after upload.</p>
+
+    <h2>Upload</h2>
     <div id="drop" class="drop" tabindex="0" role="button" aria-label="Choose or drop a CSV file">
       <strong>Drop your CSV here</strong>
       <span>or click to choose a file</span>
@@ -33,10 +67,10 @@
   </section>
 
   <section id="setup" class="card" hidden>
-    <h2>1. Which column is which?</h2>
+    <h2>Which column is which?</h2>
     <div id="mapping" class="mapping"></div>
 
-    <h2>2. Output</h2>
+    <h2>Output</h2>
     <div class="options">
       <div class="field">
         <label>Formats</label>
@@ -59,7 +93,7 @@
       </div>
     </div>
 
-    <h2>3. Generate</h2>
+    <h2>Generate</h2>
     <button id="go" class="go">Generate certificates &amp; download ZIP</button>
     <div id="progressWrap" class="progress" hidden>
       <div class="track"><div id="bar" class="bar"></div></div>
@@ -73,15 +107,6 @@
     <p id="previewNote" class="muted">Drop a CSV to see the first certificate.</p>
     <img id="preview" class="preview" alt="Certificate preview" hidden>
   </section>
-
-  <details class="card">
-    <summary>CSV format</summary>
-    <p>One row per captain. Headers are matched automatically; anything unusual you can remap above.</p>
-<pre>captain_name,tag,achievement
-Ravi Kumar,Punctuality Pro,100% on-time across 62 trips this month
-Sunil Yadav,Elite Captain,perfect 100/100 score with zero complaints</pre>
-    <p><a href="sample-captains.csv" download>Download a sample CSV</a></p>
-  </details>
 
 </main>
 
