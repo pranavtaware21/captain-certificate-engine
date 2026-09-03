@@ -14,10 +14,13 @@ export const FONT_STYLE_CSS = FONT_CSS;
 
 const CX = PAGE.w / 2;                     // 420.96
 
+/* The artwork's near-black is replaced by the Cityflo brand navy (design system
+ * P-300), with P-200 for the softer secondary text so the sheet reads as one
+ * palette. Gold and rule stay exactly as the .ai has them. */
 const C = {
   paper: '#f6ede2',
-  ink: '#20180d',
-  inkSoft: '#5a4d3a',
+  ink: '#00253f',        // P-300, Primary Brand-Blue
+  inkSoft: '#2b4a60',    // P-200
   gold: '#eda01e',
   goldDeep: '#a9741a',
   rule: '#d8c39a',
@@ -37,7 +40,6 @@ const T = {
   dateVal: { f: 'CFArchivo', w: 400, s: 'normal', size: 10.4, ls: 0.4 },
   sigWho:  { f: 'CFArchivo', w: 600, s: 'normal', size: 7.376, ls: 1.036 },
   sigSub:  { f: 'CFArchivo', w: 400, s: 'normal', size: 6.706, ls: 0 },
-  pillar:  { f: 'CFArchivo', w: 600, s: 'normal', size: 7.055, ls: 1.012 },
 };
 
 /* Baselines / rules / shapes, all measured off the v2 artwork.
@@ -73,10 +75,6 @@ const L = {
   sigSubBase:  466.63,
   dateBase:    441.0,        // the date prints in the signing space, above the rule
   sigCx:       [276.35, 565.45],
-  pillarX:     [132.65, 276.85, 421.04, 565.24, 709.43],
-  pillarStem:  { y0: 510.40, y1: 518.75, t: 0.607 },
-  pillarDia:   { s: 6.07, cy: 508.125, sw: 0.607 },
-  pillarBase:  529.44,
 };
 
 const FIXED = {
@@ -89,7 +87,6 @@ const FIXED = {
     { who: 'AUTHORISED SIGNATORY', sub: 'CITYFLO OPERATIONS' },
     { who: 'DATE', sub: '[DD MMM YYYY]' },
   ],
-  pillars: ['EVERY TRIP', 'SAFETY', 'PUNCTUALITY', 'CARE', 'EXCELLENCE'],
 };
 
 /* ---------- text measurement (canvas, same fonts as the SVG) ---------- */
@@ -154,10 +151,22 @@ function hrule(x0, x1, y, thickness, fill) {
   return `<rect x="${n(x0)}" y="${n(y - thickness / 2)}" width="${n(x1 - x0)}" height="${n(thickness)}" fill="${fill}"/>`;
 }
 
+/* With the pillar row gone the sheet had a wide empty band at the foot, so the
+ * whole content group is scaled up and re-centred inside the frame. Everything
+ * else still works in the .ai's own coordinates — measurement, wrapping and name
+ * fitting are all pre-transform — and only these numbers move it. */
+const CONTENT_SCALE = 1.12;
+const CONTENT_MID_OLD = 264.5;          // mid-height of the content as laid out
+const CONTENT_MID_NEW = 297.5;          // mid-height of the frame's inside
+const CONTENT_OPEN = '<g transform="translate('
+  + `${n(CX * (1 - CONTENT_SCALE))} ${n(CONTENT_MID_NEW - CONTENT_SCALE * CONTENT_MID_OLD)})`
+  + ` scale(${CONTENT_SCALE})">`;
+const CONTENT_CLOSE = '</g>';
+
 /* ---------- the certificate ----------
  *
  * The page is built as two layers. Everything fixed (artwork, frame, headings,
- * signature block, pillars) sits in the static layer, which is rasterised once
+ * signature block) sits in the static layer, which is rasterised once
  * per run and reused; only the four variable bits are re-rendered per row.
  * buildCertificateSVG() stitches both layers into one standalone SVG.
  */
@@ -179,10 +188,8 @@ function staticParts() {
 
   // paper + Mumbai street-map panels + inner hairline frame, straight from the .ai
   p.push(`<g>${BG_SVG}</g>`);
-  p.push(`<image x="${L.logo.x}" y="${L.logo.y}" width="${L.logo.w}" height="${L.logo.h}" `
-    + `preserveAspectRatio="xMidYMid meet" href="${LOGO_PNG}"/>`);
 
-  // outer gold frame + corner diamonds
+  // outer gold frame + corner diamonds: page furniture, so they keep their size
   p.push(`<rect x="${L.frame.x}" y="${L.frame.y}" width="${L.frame.w}" height="${L.frame.h}" `
     + `fill="none" stroke="${C.gold}" stroke-width="${L.frame.sw}"/>`);
   for (const [cx, cy] of L.corner.pts) {
@@ -190,6 +197,10 @@ function staticParts() {
     p.push(diamond(cx, cy, L.corner.s + 1.5, `fill="${C.paper}"`));
     p.push(diamond(cx, cy, L.corner.s, `fill="${C.gold}"`));
   }
+
+  p.push(CONTENT_OPEN);
+  p.push(`<image x="${L.logo.x}" y="${L.logo.y}" width="${L.logo.w}" height="${L.logo.h}" `
+    + `preserveAspectRatio="xMidYMid meet" href="${LOGO_PNG}"/>`);
 
   // eyebrow
   p.push(
@@ -219,31 +230,14 @@ function staticParts() {
     text(L.sigCx[0], L.sigSubBase, FIXED.sig[0].sub, T.sigSub, C.rule),
     text(L.sigCx[1], L.sigWhoBase, FIXED.sig[1].who, T.sigWho, C.inkSoft)
   );
-
-  // five pillars: stems, diamonds, labels, bus at the start, pennant at the end
-  L.pillarX.forEach((x, i) => {
-    p.push(`<rect x="${n(x - L.pillarStem.t / 2)}" y="${L.pillarStem.y0}" width="${L.pillarStem.t}" `
-      + `height="${n(L.pillarStem.y1 - L.pillarStem.y0)}" fill="${C.rule}"/>`);
-    p.push(diamond(x, L.pillarDia.cy, L.pillarDia.s,
-      `fill="${C.gold}" stroke="${C.goldDeep}" stroke-width="${L.pillarDia.sw}"`));
-    p.push(text(x, L.pillarBase, FIXED.pillars[i], T.pillar, i === 4 ? C.goldDeep : C.inkSoft));
-  });
-  p.push(
-    `<g fill="none" stroke="${C.goldDeep}" stroke-width="1.138" stroke-linejoin="round">`
-    + '<rect x="119.60" y="481.41" width="25.80" height="11.38" rx="2.6"/>'
-    + '<path d="M119.75 485.66H145.25"/>'
-    + '<path d="M125.82 481.56v4.10M132.65 481.56v4.10M139.48 481.56v4.10"/>'
-    + '<circle cx="125.82" cy="494.77" r="1.745"/><circle cx="138.73" cy="494.77" r="1.745"/></g>',
-    `<path d="M709.43 488.39V505.09" stroke="${C.goldDeep}" stroke-width="0.987"/>`,
-    `<path d="M709.43 489.15L720.82 492.19L709.43 495.22Z" fill="${C.gold}"/>`
-  );
+  p.push(CONTENT_CLOSE);
 
   return p;
 }
 
 /** The four per-captain bits: name, tag pill, achievement block, date. */
 function dynamicParts({ name = '', tag = '', achievement = '', date = '', period = '', placeholders = false } = {}) {
-  const p = [];
+  const p = [CONTENT_OPEN];
 
   /* Name, flanked by the .ai's rules and gold diamonds. A longer name pushes
      the diamonds outward (the rules shorten to make room) and only shrinks the
@@ -314,6 +308,7 @@ function dynamicParts({ name = '', tag = '', achievement = '', date = '', period
   const dateText = date ? String(date).trim().toUpperCase() : (placeholders ? FIXED.sig[1].sub : '');
   if (dateText) p.push(text(L.sigCx[1], L.dateBase, dateText, T.dateVal, C.inkSoft));
 
+  p.push(CONTENT_CLOSE);
   return p;
 }
 

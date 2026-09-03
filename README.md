@@ -99,6 +99,9 @@ artwork cannot be filled in directly. It was rebuilt instead:
 - **Type** (`js/certificate.js`) — re-typeset in the original fonts. Every size, baseline,
   letter-spacing and rule position was measured off the source file, then checked against a
   300 dpi render of it: all runs land within ~1 pt (0.35 mm).
+- **Colour** — the artwork's near-black is printed in the Cityflo brand navy
+  (`#00253f`, design system P-300), with P-200 `#2b4a60` for secondary text. Gold
+  and the hairline rules stay exactly as the .ai has them.
 - **Fonts** — Fraunces (`opsz` pinned to 72, weights 400 / 500 italic / 600 italic) and
   Archivo (400 / 600), SIL OFL 1.1, subset to Latin and embedded as base64 woff2 so the
   output is identical offline and on any machine.
