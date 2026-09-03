@@ -29,8 +29,8 @@ Three fields drive the output; everything else on the certificate is fixed artwo
 | Field | Required | Notes |
 |---|---|---|
 | Name | yes | Rows with no name are skipped and reported |
-| Tag | no | 1–2 words. Takes the award block's display line, set large in gold Fraunces italic. Casing is used as given |
-| Achievement | no | One short sentence, printed on the line under the tag. Wraps to two lines, shrinks if very long. With no tag it moves up into the display line |
+| Tag | no | 1–2 words. Takes the award block's display line — upright Fraunces, ink, 17pt. Casing is used as given |
+| Achievement | no | One short sentence, printed below the tag. Wraps to two lines, shrinks if very long. With no tag it moves up into the display line, in the .ai's italic |
 
 Header names are matched loosely (`captain_name`, `name`, `captain`, `tag`, `badge`,
 `achievement`, `citation`, `reason`, …). Anything unusual you remap in the UI.
@@ -84,11 +84,18 @@ artwork cannot be filled in directly. It was rebuilt instead:
   Archivo (400 / 600), SIL OFL 1.1, subset to Latin and embedded as base64 woff2 so the
   output is identical offline and on any machine.
 
-The one structural change from the .ai: the award block has one display line in the source,
-and the tag takes it — `AWARDED FOR`, the tag in gold italic, the achievement on the line
-beneath, then the citation. Each piece pushes what follows down by its own ink height, so the
-citation only moves when it has to; with no tag the achievement keeps the display line and the
-layout is the .ai's exactly.
+Differences from the .ai, all deliberate:
+
+- **The tag.** The source's award block has one display line; the tag takes it, upright in ink.
+  The achievement then prints where the .ai's fixed citation paragraph sat. With no tag the
+  achievement moves up into the display line, in the .ai's own italic.
+- **The citation paragraph is gone.** "Through unwavering punctuality…" was generic filler
+  competing with the real achievement, so the achievement occupies that block instead.
+- **The date prints above its rule**, not below the label — that is the space you would sign
+  in, and the whole signature block sits 14pt lower to leave room for a pen.
+- **The name's flanking rules and diamonds never drop away.** A long name pushes the diamonds
+  outward and shortens the rules; only when the diamonds run out of travel does the type
+  shrink (down to 16pt). Colour and style stay as the source has them.
 
 ### Things worth knowing if you edit it
 

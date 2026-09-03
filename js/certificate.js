@@ -33,19 +33,13 @@ const T = {
   role:    { f: 'CFArchivo', w: 600, s: 'normal', size: 7.376, ls: 2.185 },
   awarded: { f: 'CFArchivo', w: 600, s: 'normal', size: 6.749, ls: 2.631 },
   achv:    { f: 'CFFraunces', w: 600, s: 'italic', size: 14.37, ls: 0.28 },
-  achvLine:{ f: 'CFArchivo', w: 400, s: 'normal', size: 9.4, ls: 0.05 },
-  para:    { f: 'CFArchivo', w: 400, s: 'normal', size: 8.404, ls: 0 },
+  tagLine: { f: 'CFFraunces', w: 600, s: 'normal', size: 17.2, ls: 0.1 },
+  achvLine:{ f: 'CFArchivo', w: 400, s: 'normal', size: 9.6, ls: 0.05 },
+  dateVal: { f: 'CFArchivo', w: 400, s: 'normal', size: 10.4, ls: 0.4 },
   sigWho:  { f: 'CFArchivo', w: 600, s: 'normal', size: 7.376, ls: 1.036 },
   sigSub:  { f: 'CFArchivo', w: 400, s: 'normal', size: 6.706, ls: 0 },
   pillar:  { f: 'CFArchivo', w: 600, s: 'normal', size: 7.055, ls: 1.012 },
 };
-
-/* Glyph extents (fraction of font size) for stacking the award block by ink,
- * not by guesswork: ascender top of 'h' and descender bottom of 'p'. */
-const ASC_FRAUNCES = 0.7235;
-const DESC_FRAUNCES = 0.24;
-const ASC_ARCHIVO = 0.723;
-const DESC_ARCHIVO = 0.173;
 
 /* Baselines / rules / shapes, all measured off the v2 artwork.
  * The .ai's award block has one display line. The tag takes it, and the
@@ -64,22 +58,21 @@ const L = {
   nameRule:    { y: 266.15, t: 0.75, l: [200.98, 274.47], r: [566.95, 641.19] },
   nameDot:     { s: 6.37, y: 266.52, x: [287.22, 554.20] },
   nameBase:    277.35,
-  nameInnerW:  247,          // clear space between the two gold diamonds
-  nameOuterW:  560,          // full width once the rules and diamonds drop away
+  namePad:     11,           // clear space between the name's ink and its diamond
+  nameDotMinX: 233.73,       // how far out a diamond may travel (keeps 20pt of rule)
+  nameRuleGap: 12.75,        // diamond -> rule gap, as the .ai has it
+  nameMinSize: 16,           // only shrink once the diamonds have run out of room
   roleBase:    297.45,
-  achvGap:     7,            // tag line bottom -> achievement line ascender
-  paraGap:     12,           // award block bottom -> paragraph ascender
-  paraGapTight: 8,           // ... and when the achievement ran to two lines
+  achvLead:    13.6,         // achievement line spacing when it wraps
   awardedBase: 323.98,
-  achvBase:    348.88,
+  tagBase:     348.88,       // the .ai's display line
   achvMaxW:    468,
-  achvLineMaxW: 440,
-  paraBase:    375.02,
-  paraLead:    14.25,
-  paraMaxW:    492,
-  sigRule:     { y: 433.85, t: 0.75, l: [188.23, 364.46], r: [477.70, 653.19] },
-  sigWhoBase:  444.05,
-  sigSubBase:  452.48,
+  achvBase:    375.02,       // the achievement sits where the .ai's citation paragraph did
+  achvLineMaxW: 470,
+  sigRule:     { y: 448.0, t: 0.75, l: [188.23, 364.46], r: [477.70, 653.19] },
+  sigWhoBase:  458.2,        // labels keep the .ai's 10.2pt drop below the rule
+  sigSubBase:  466.63,
+  dateBase:    441.0,        // the date prints in the signing space, above the rule
   sigCx:       [276.35, 565.45],
   pillarX:     [132.65, 276.85, 421.04, 565.24, 709.43],
   pillarStem:  { y0: 510.40, y1: 518.75, t: 0.607 },
@@ -94,8 +87,6 @@ const FIXED = {
   lede: 'THIS HONOUR IS PROUDLY PRESENTED TO',
   role: 'CITYFLO CAPTAIN',
   awarded: 'AWARDED FOR',
-  para: 'Through unwavering punctuality, a spotless bus, and genuine care for every commuter on board, '
-      + 'you have set the benchmark for what it means to wear the Cityflo badge. Thank you for the brilliant job, Captain.',
   sig: [
     { who: 'AUTHORISED SIGNATORY', sub: 'CITYFLO OPERATIONS' },
     { who: 'DATE', sub: '[DD MMM YYYY]' },
@@ -264,71 +255,69 @@ function staticParts() {
 function dynamicParts({ name = '', tag = '', achievement = '', date = '', placeholders = false } = {}) {
   const p = [];
 
-  /* Name. It normally sits between the two gold diamonds; a name too long for
-     that gap keeps its size and the flanking rules and diamonds drop away. */
+  /* Name, flanked by the .ai's rules and gold diamonds. A longer name pushes
+     the diamonds outward (the rules shorten to make room) and only shrinks the
+     type once the diamonds have travelled as far as they can. The marks never
+     drop away. */
   const nameText = String(name || '').trim() || (placeholders ? 'Captain Name' : 'Captain');
-  let nameSize = fitSize(nameText, T.name, L.nameInnerW, 22);
-  const flanked = advance(nameText, { ...T.name, size: nameSize }) <= L.nameInnerW;
-  if (!flanked) nameSize = fitSize(nameText, T.name, L.nameOuterW, 13);
-  if (flanked) {
-    p.push(
-      `<rect x="${L.nameRule.l[0]}" y="${n(L.nameRule.y - L.nameRule.t / 2)}" `
-        + `width="${n(L.nameRule.l[1] - L.nameRule.l[0])}" height="${L.nameRule.t}" fill="url(#cf-fadeR)"/>`,
-      `<rect x="${L.nameRule.r[0]}" y="${n(L.nameRule.y - L.nameRule.t / 2)}" `
-        + `width="${n(L.nameRule.r[1] - L.nameRule.r[0])}" height="${L.nameRule.t}" fill="url(#cf-fadeL)"/>`,
-      diamond(L.nameDot.x[0], L.nameDot.y, L.nameDot.s, `fill="${C.gold}"`),
-      diamond(L.nameDot.x[1], L.nameDot.y, L.nameDot.s, `fill="${C.gold}"`)
-    );
+  const maxHalf = CX - L.nameDotMinX - L.namePad;          // widest half-name the marks allow
+  let nameSize = T.name.size;
+  while (nameSize > L.nameMinSize
+         && advance(nameText, { ...T.name, size: nameSize }) / 2 > maxHalf) {
+    nameSize -= 0.25;
   }
-  p.push(text(CX, L.nameBase, nameText, { ...T.name, size: nameSize }, C.goldDeep));
+  const nameT = { ...T.name, size: nameSize };
+  const half = Math.min(
+    Math.max(advance(nameText, nameT) / 2 + L.namePad, CX - L.nameDot.x[0]),
+    CX - L.nameDotMinX
+  );
+  const dotL = CX - half;
+  const dotR = CX + half;
+  const ruleLW = Math.max(0, dotL - L.nameRuleGap - L.nameRule.l[0]);
+  const ruleRW = Math.max(0, L.nameRule.r[1] - (dotR + L.nameRuleGap));
+  p.push(
+    `<rect x="${L.nameRule.l[0]}" y="${n(L.nameRule.y - L.nameRule.t / 2)}" `
+      + `width="${n(ruleLW)}" height="${L.nameRule.t}" fill="url(#cf-fadeR)"/>`,
+    `<rect x="${n(dotR + L.nameRuleGap)}" y="${n(L.nameRule.y - L.nameRule.t / 2)}" `
+      + `width="${n(ruleRW)}" height="${L.nameRule.t}" fill="url(#cf-fadeL)"/>`,
+    diamond(dotL, L.nameDot.y, L.nameDot.s, `fill="${C.gold}"`),
+    diamond(dotR, L.nameDot.y, L.nameDot.s, `fill="${C.gold}"`),
+    text(CX, L.nameBase, nameText, nameT, C.goldDeep)
+  );
 
-  /* The award block, stacked under "Awarded for": the tag pill first, then the
-     achievement line(s) below it. Each piece pushes what follows down, so the
-     citation paragraph only moves when it has to. */
-  const tagText = String(tag || '').trim();   // set in the display italic, so its own casing reads best
+  /* The award block. The .ai's display line carries the tag, set upright in
+     ink; the achievement prints where the .ai's citation paragraph sat. With no
+     tag the achievement takes the display line in the .ai's own italic. */
+  const tagText = String(tag || '').trim();
   const achvText = String(achievement || '').trim()
     || (placeholders ? 'the achievement — e.g. exceptional service & a flawless safety record' : '');
 
   if (tagText || achvText) p.push(text(CX, L.awardedBase, FIXED.awarded, T.awarded, C.goldDeep));
 
-  let blockBottom = 0;      // lowest ink of the award block so far
-  let paraGap = L.paraGap;
-
-  /* The .ai's display line — the big Fraunces italic — carries the tag. Only
-     when there is no tag does the achievement take that line instead. */
-  const headline = tagText || achvText;
-  if (headline) {
-    const headT = { ...T.achv, size: fitSize(headline, T.achv, L.achvMaxW, 10.5) };
-    let lines = wrap(headline, headT, L.achvMaxW);
-    const lead = headT.size * 1.32;
-    lines.forEach((line, i) => p.push(text(CX, L.achvBase + i * lead, line, headT,
-      tagText ? C.goldDeep : C.ink)));
-    blockBottom = L.achvBase + (lines.length - 1) * lead + headT.size * DESC_FRAUNCES;
-    if (lines.length > 1) paraGap = L.paraGapTight;
+  if (tagText) {
+    const tagT = { ...T.tagLine, size: fitSize(tagText, T.tagLine, L.achvMaxW, 11) };
+    wrap(tagText, tagT, L.achvMaxW).forEach((line, i) =>
+      p.push(text(CX, L.tagBase + i * tagT.size * 1.24, line, tagT, C.ink)));
   }
 
-  // the achievement sits on the line under the tag
-  if (tagText && achvText) {
-    let achvT = { ...T.achvLine };
-    let lines = wrap(achvText, achvT, L.achvLineMaxW);
-    while (lines.length > 2 && achvT.size > 7.6) {
-      achvT = { ...achvT, size: achvT.size - 0.3 };
-      lines = wrap(achvText, achvT, L.achvLineMaxW);
+  if (achvText) {
+    // on the display line when it stands alone, otherwise in the citation's slot
+    const solo = !tagText;
+    let achvT = solo ? { ...T.achv } : { ...T.achvLine };
+    const maxW = solo ? L.achvMaxW : L.achvLineMaxW;
+    let lines = wrap(achvText, achvT, maxW);
+    while (lines.length > 2 && achvT.size > (solo ? 10.5 : 7.8)) {
+      achvT = { ...achvT, size: achvT.size - (solo ? 0.4 : 0.3) };
+      lines = wrap(achvText, achvT, maxW);
     }
-    const firstBase = blockBottom + L.achvGap + achvT.size * ASC_ARCHIVO;
-    const lead = achvT.size * 1.45;
-    lines.forEach((line, i) => p.push(text(CX, firstBase + i * lead, line, achvT, C.ink)));
-    blockBottom = firstBase + (lines.length - 1) * lead + achvT.size * DESC_ARCHIVO;
-    paraGap = L.paraGap;
+    const base = solo ? L.tagBase : L.achvBase;
+    const lead = solo ? achvT.size * 1.32 : L.achvLead;
+    lines.forEach((line, i) => p.push(text(CX, base + i * lead, line, achvT,
+      solo ? C.ink : C.inkSoft)));
   }
-
-  // the citation paragraph holds the .ai's position unless the block above needs the room
-  const paraBase = Math.max(L.paraBase, blockBottom + paraGap + T.para.size * ASC_ARCHIVO);
-  wrap(FIXED.para, T.para, L.paraMaxW).forEach((line, i) =>
-    p.push(text(CX, paraBase + i * L.paraLead, line, T.para, C.inkSoft)));
 
   const dateText = date ? String(date).trim().toUpperCase() : (placeholders ? FIXED.sig[1].sub : '');
-  if (dateText) p.push(text(L.sigCx[1], L.sigSubBase, dateText, T.sigSub, C.rule));
+  if (dateText) p.push(text(L.sigCx[1], L.dateBase, dateText, T.dateVal, C.inkSoft));
 
   return p;
 }
