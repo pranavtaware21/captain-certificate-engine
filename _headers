@@ -1,0 +1,8 @@
+# Cloudflare Pages headers.
+# The HTML, CSS and JS are small and change together, so always revalidate —
+# that is what stopped a stale stylesheet being served after a redeploy.
+/*
+  Cache-Control: public, max-age=0, must-revalidate
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: no-referrer
+  X-Frame-Options: SAMEORIGIN

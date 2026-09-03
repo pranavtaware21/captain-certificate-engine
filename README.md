@@ -45,7 +45,13 @@ Quality picker sets the render resolution: Print 300 dpi (~1.5 MB/certificate),
 Standard 200 dpi (default, ~700 KB), Light 150 dpi. Above roughly 200 rows, split the CSV —
 the whole ZIP is built in memory.
 
-## Hosting on GitHub Pages
+## Hosting
+
+Currently on GitHub Pages (public). To put it behind a login for the ops team
+only, see [HOSTING.md](HOSTING.md) — Cloudflare Pages + Access, free, email
+one-time PIN. A passcode inside the page cannot restrict a static public site.
+
+### GitHub Pages
 
 ```bash
 git init && git add -A && git commit -m "Captain certificate engine"
