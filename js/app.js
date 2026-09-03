@@ -1,6 +1,7 @@
 /* CSV in, ZIP of certificates out. Everything runs in the browser. */
 import { renderCertificate, ensureFonts, PAGE } from './certificate.js';
 import { LOGO_PNG } from './logo.js';
+import { guard } from './gate.js';
 
 const $ = (id) => document.getElementById(id);
 
@@ -231,6 +232,10 @@ function wire() {
 }
 
 (async function init() {
+  const gateLogo = $('gateLogo');
+  if (gateLogo) gateLogo.src = LOGO_PNG;
+  await guard();                       // the page stays behind the gate until unlocked
+
   wire();
   const logo = $('brandLogo');
   if (logo) { logo.src = LOGO_PNG; logo.classList.add('in'); }

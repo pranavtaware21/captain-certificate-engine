@@ -45,6 +45,16 @@ Quality picker sets the render resolution: Print 300 dpi (~1.5 MB/certificate),
 Standard 200 dpi (default, ~700 KB), Light 150 dpi. Above roughly 200 rows, split the CSV —
 the whole ZIP is built in memory.
 
+## Access
+
+The page opens behind a passcode (`js/gate.js`): a mobile number plus a 4-digit
+code, held as a PBKDF2 hash rather than in plain text, with the unlock remembered
+in `localStorage` — append `?lock` to the URL to sign out again.
+
+It is a speed bump, not access control: the check runs client-side on a public
+static page, so it stops strangers who find the link, not anyone determined.
+[HOSTING.md](HOSTING.md) covers the real gate (Cloudflare Access, free).
+
 ## Hosting
 
 Currently on GitHub Pages (public). To put it behind a login for the ops team
@@ -112,6 +122,7 @@ Differences from the .ai, all deliberate:
 index.html            UI
 app.css               UI styles
 js/app.js             CSV parse, render loop, ZIP, download
+js/gate.js            passcode gate (hashed; a speed bump, see HOSTING.md)
 js/certificate.js     the template: geometry, type, SVG builder, rasteriser
 js/background.js      background artwork extracted from the .ai
 js/logo.js            Cityflo wordmark

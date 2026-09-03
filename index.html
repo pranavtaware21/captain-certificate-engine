@@ -5,9 +5,29 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Cityflo — Captain Certificate Engine</title>
 <meta name="description" content="Upload a CSV of Cityflo captains, get every Certificate of Excellence back as one ZIP.">
-<link rel="stylesheet" href="app.css?v=3">
+<link rel="stylesheet" href="app.css?v=4">
 </head>
-<body>
+<body class="locked">
+
+<!-- access gate: a speed bump for the public URL, see js/gate.js -->
+<div id="gate" class="gate" hidden>
+  <form id="gateForm" class="gateCard" autocomplete="off">
+    <img id="gateLogo" class="gateLogo" alt="Cityflo" width="82" height="30">
+    <p class="eyebrow">Cityflo Operations</p>
+    <h2 class="gateTitle">Certificate <em>Engine</em></h2>
+    <p class="gateNote">Enter the mobile number and code shared with the ops team.</p>
+    <label class="gateField">
+      <span>Mobile number</span>
+      <input id="gateMobile" type="tel" inputmode="numeric" placeholder="10-digit number" autocomplete="off">
+    </label>
+    <label class="gateField">
+      <span>Code</span>
+      <input id="gateCode" type="password" inputmode="numeric" maxlength="4" placeholder="&bull;&bull;&bull;&bull;" autocomplete="off">
+    </label>
+    <button id="gateBtn" class="go" type="submit">Unlock</button>
+    <p id="gateMsg" class="gateMsg"></p>
+  </form>
+</div>
 
 <header class="top wrap">
   <span class="corner l"></span><span class="corner r"></span>

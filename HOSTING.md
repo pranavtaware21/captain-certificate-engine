@@ -64,7 +64,24 @@ the fonts). Make it private too if you would rather the code not be readable:
 gh repo edit pranavtaware21/captain-certificate-engine --visibility private
 ```
 
-## Why not a passcode on the page
+## The passcode gate that is on the page now
+
+`js/gate.js` asks for a mobile number and a 4-digit code before the tool
+appears, and remembers the unlock in `localStorage` (add `?lock` to the URL to
+sign out). Only a PBKDF2-SHA256 hash of the pair is in the source — 210,000
+iterations, random salt — so the number itself is not published, and the code
+slows down after three wrong tries.
+
+Be clear about what it is: **a speed bump, not access control.** The check runs
+in the visitor's own browser, so anyone who opens DevTools can skip it, and a
+4-digit code is only 10,000 guesses. It stops a stranger who lands on the URL
+from using the tool; it does not keep out anyone who is trying. The page holds
+no captain data either way — the CSV never leaves the browser — so what is
+behind the gate is the tool, not the records.
+
+Use Cloudflare Access above when the requirement is real access control.
+
+## Why a passcode alone is not enough
 
 Worth being explicit, since it is the obvious first instinct: a phone number and
 OTP hardcoded in the page would be visible to anyone who opens View Source, is
