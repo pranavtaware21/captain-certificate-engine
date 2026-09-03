@@ -1,5 +1,6 @@
 /* CSV in, ZIP of certificates out. Everything runs in the browser. */
 import { renderCertificate, ensureFonts, PAGE } from './certificate.js';
+import { LOGO_PNG } from './logo.js';
 
 const $ = (id) => document.getElementById(id);
 
@@ -78,7 +79,7 @@ function loadFile(file) {
 function buildMapping() {
   const wrap = $('mapping');
   wrap.replaceChildren();
-  const fields = [['name', 'Name', true], ['tag', 'Tag', false], ['achievement', 'Achievement line', false]];
+  const fields = [['name', 'Name', true], ['tag', 'Tag', false], ['achievement', 'Achievement', false]];
   for (const [key, labelText, required] of fields) {
     const id = `map-${key}`;
     const field = document.createElement('div');
@@ -90,8 +91,8 @@ function buildMapping() {
     if (!required) {
       const opt = document.createElement('span');
       opt.className = 'opt';
-      opt.textContent = 'optional';
-      label.append(' ', opt);
+      opt.textContent = ' optional';
+      label.append(opt);
     }
 
     const select = document.createElement('select');
@@ -127,6 +128,7 @@ function refreshPreview() {
     const img = $('preview');
     img.src = canvas.toDataURL('image/png');
     img.hidden = false;
+    $('previewEmpty').hidden = true;
     $('previewNote').textContent = `Preview of row 1 of ${state.rows.length}: ${rowValue(row, 'name') || '(no name)'}`;
   }, 80);
 }
@@ -181,8 +183,10 @@ async function generate() {
     }
 
     const done = i + 1;
-    $('bar').style.width = `${(done / total) * 100}%`;
-    $('progressText').textContent = `${done} of ${total}: ${name}`;
+    const pct = (done / total) * 100;
+    $('bar').style.width = `${pct}%`;
+    $('bus').style.left = `${pct}%`;
+    $('progressText').textContent = `${done} of ${total} — ${name}`;
     await new Promise((r) => setTimeout(r, 0));   // let the UI breathe
   }
 
@@ -228,7 +232,9 @@ function wire() {
 
 (async function init() {
   wire();
-  status('Loading fonts...');
+  const logo = $('brandLogo');
+  if (logo) { logo.src = LOGO_PNG; logo.classList.add('in'); }
+  status('Setting the type\u2026');
   await ensureFonts();
   status('Ready. Drop a CSV to start.');
 })();

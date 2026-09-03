@@ -3,111 +3,142 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Cityflo Captain Certificate Engine</title>
-<link rel="stylesheet" href="app.css">
+<title>Cityflo — Captain Certificate Engine</title>
+<meta name="description" content="Upload a CSV of Cityflo captains, get every Certificate of Excellence back as one ZIP.">
+<link rel="stylesheet" href="app.css?v=3">
 </head>
 <body>
 
-<header class="top">
-  <div class="wrap">
-    <div class="brand">
-      <span class="mark"></span>
-      <div>
-        <h1>Captain Certificate Engine</h1>
-        <p>Upload a CSV, get every captain's Certificate of Excellence back as one ZIP.</p>
-      </div>
-    </div>
+<header class="top wrap">
+  <span class="corner l"></span><span class="corner r"></span>
+  <img id="brandLogo" class="logo" alt="Cityflo" width="93" height="34">
+  <div class="crest">
+    <span class="r"></span><span class="dia"></span>
+    <span class="eyebrow">Captain Recognition Programme</span>
+    <span class="dia"></span><span class="r rt"></span>
   </div>
+  <h1>Certificate <em>Engine</em></h1>
+  <p class="dek">One CSV in, a Certificate of Excellence for every captain out &mdash; print-ready PDFs and shareable PNGs, packed into a single ZIP.</p>
 </header>
 
 <main class="wrap">
+  <div class="cols">
 
-  <section class="card">
-    <h2>CSV format</h2>
-    <p class="muted">Three columns, one row per captain. First row must be the header.</p>
-    <div class="fmt">
-      <table class="fmtTable">
-        <thead>
-          <tr><th>name</th><th>tag</th><th>achievement</th></tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td>Ravi Kumar</td>
-            <td>Punctuality Pro</td>
-            <td>100% on-time across 62 trips this month</td>
-          </tr>
-          <tr>
-            <td>Sunil Yadav</td>
-            <td>Elite Captain</td>
-            <td>perfect 100 out of 100 with zero commuter complaints</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-    <ul class="rules">
-      <li><b>name</b> — required. Prints as the captain's name. Rows with no name are skipped.</li>
-      <li><b>tag</b> — optional, 1&ndash;2 words. Prints as the gold pill. Leave blank for no pill.</li>
-      <li><b>achievement</b> — optional, one short sentence, lower case, no full stop. Leave blank to drop the &ldquo;Awarded for&rdquo; block.</li>
-    </ul>
-    <p class="dl">
-      <a href="template.csv" download>Download template.csv</a>
-      <span>&middot;</span>
-      <a href="sample-captains.csv" download>filled-in example (5 rows)</a>
-    </p>
-    <p class="muted small">Other header names work too (<code>captain_name</code>, <code>badge</code>, <code>citation</code>, <code>reason</code>&hellip;) &mdash; and you can remap any column after upload.</p>
-
-    <h2>Upload</h2>
-    <div id="drop" class="drop" tabindex="0" role="button" aria-label="Choose or drop a CSV file">
-      <strong>Drop your CSV here</strong>
-      <span>or click to choose a file</span>
-      <em id="fileName"></em>
-    </div>
-    <input id="csv" type="file" accept=".csv,text/csv" hidden>
-    <p id="status" class="status">Loading fonts...</p>
-  </section>
-
-  <section id="setup" class="card" hidden>
-    <h2>Which column is which?</h2>
-    <div id="mapping" class="mapping"></div>
-
-    <h2>Output</h2>
-    <div class="options">
-      <div class="field">
-        <label>Formats</label>
-        <div class="checks">
-          <label class="check"><input type="checkbox" id="outPdf" checked> PDF</label>
-          <label class="check"><input type="checkbox" id="outPng" checked> PNG</label>
+    <div>
+      <!-- 1. format -->
+      <section class="plate">
+        <header><span class="step"><b>1</b></span><h2>The CSV</h2></header>
+        <p class="note">Three columns, one row per captain. First row is the header.</p>
+        <div class="fmt">
+          <table>
+            <thead>
+              <tr><th>name</th><th>tag</th><th>achievement</th></tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Ravi Kumar</td>
+                <td>Punctuality Pro</td>
+                <td>100% on-time across 62 trips this month</td>
+              </tr>
+              <tr>
+                <td>Sunil Yadav</td>
+                <td>Elite Captain</td>
+                <td>perfect 100 out of 100, clean on every pillar</td>
+              </tr>
+            </tbody>
+          </table>
         </div>
-      </div>
-      <div class="field">
-        <label for="quality">Quality</label>
-        <select id="quality">
-          <option value="print">Print &mdash; 300 dpi</option>
-          <option value="standard" selected>Standard &mdash; 200 dpi</option>
-          <option value="light">Light &mdash; 150 dpi, smallest ZIP</option>
-        </select>
-      </div>
-      <div class="field">
-        <label for="dateText">Date printed on the certificate</label>
-        <input id="dateText" type="text" placeholder="03 SEP 2026" autocomplete="off">
-      </div>
+        <div class="legend">
+          <div><code>name</code><span><b>Required.</b> Prints as the captain's name. Rows without one are skipped and reported.</span></div>
+          <div><code>tag</code><span><b>Optional.</b> One or two words &mdash; prints as the gold pill. Blank means no pill.</span></div>
+          <div><code>achievement</code><span><b>Optional.</b> One short sentence under the pill. Blank drops the whole &ldquo;Awarded for&rdquo; block.</span></div>
+        </div>
+        <p class="grabs">
+          <a href="template.csv" download>Download template.csv</a>
+          <a href="sample-captains.csv" download>Filled-in example</a>
+          <span class="aside">Other headers work too &mdash; <code>captain_name</code>, <code>badge</code>, <code>citation</code>, <code>reason</code></span>
+        </p>
+      </section>
+
+      <!-- 2. upload -->
+      <section class="plate">
+        <header><span class="step"><b>2</b></span><h2>Upload</h2></header>
+        <div id="drop" class="drop" tabindex="0" role="button" aria-label="Choose or drop a CSV file">
+          <span class="big">Drop your CSV here</span>
+          <span class="sub">or click to choose a file</span>
+          <span class="file" id="fileName"></span>
+        </div>
+        <input id="csv" type="file" accept=".csv,text/csv" hidden>
+        <p id="status" class="status">Warming up&hellip;</p>
+      </section>
+
+      <!-- 3. settings + generate -->
+      <section id="setup" class="plate" hidden>
+        <header><span class="step"><b>3</b></span><h2>Columns</h2></header>
+        <div id="mapping" class="grid"></div>
+
+        <header style="margin-top:26px"><span class="step"><b>4</b></span><h2>Output</h2></header>
+        <div class="grid">
+          <div class="field">
+            <label>Formats</label>
+            <div class="checks">
+              <label class="check"><input type="checkbox" id="outPdf" checked><span>PDF</span></label>
+              <label class="check"><input type="checkbox" id="outPng" checked><span>PNG</span></label>
+            </div>
+          </div>
+          <div class="field">
+            <label for="quality">Quality</label>
+            <select id="quality">
+              <option value="print">Print &mdash; 300 dpi</option>
+              <option value="standard" selected>Standard &mdash; 200 dpi</option>
+              <option value="light">Light &mdash; 150 dpi</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="dateText">Date on the certificate</label>
+            <input id="dateText" type="text" placeholder="03 SEP 2026" autocomplete="off">
+          </div>
+        </div>
+
+        <div style="margin-top:26px">
+          <button id="go" class="go">Generate &amp; download ZIP</button>
+          <div id="progressWrap" class="progress" hidden>
+            <div class="track">
+              <div id="bar" class="bar"></div>
+              <div id="bus" class="bus" aria-hidden="true">
+                <svg viewBox="0 0 40 22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round">
+                  <rect x="1" y="1" width="34" height="15" rx="3.5"/>
+                  <path d="M1 7h34M9 1v6M18 1v6M27 1v6"/>
+                  <circle cx="9" cy="19" r="2.4"/><circle cx="26" cy="19" r="2.4"/>
+                </svg>
+              </div>
+            </div>
+            <p id="progressText"></p>
+          </div>
+          <p class="fineprint">Nothing leaves this browser. The CSV is read, rendered and zipped on your own machine.</p>
+        </div>
+      </section>
     </div>
 
-    <h2>Generate</h2>
-    <button id="go" class="go">Generate certificates &amp; download ZIP</button>
-    <div id="progressWrap" class="progress" hidden>
-      <div class="track"><div id="bar" class="bar"></div></div>
-      <p id="progressText"></p>
-    </div>
-    <p class="hint">Nothing leaves this browser &mdash; the CSV is read, rendered and zipped on your own machine.</p>
-  </section>
+    <!-- preview rail -->
+    <aside class="rail">
+      <section class="plate">
+        <header><span class="dia"></span><h2>Preview</h2></header>
+        <p id="previewNote" class="previewCap">Drop a CSV to see the first certificate.</p>
+        <div class="previewBox">
+          <div id="previewEmpty" class="placeholder">
+            <span class="mini"></span>
+            <span>No certificate yet</span>
+          </div>
+          <img id="preview" class="preview" alt="Certificate preview" hidden>
+        </div>
+      </section>
+      <p class="colophon">
+        Fraunces &amp; Archivo <span class="sep">&middot;</span> A4 landscape <span class="sep">&middot;</span> Cityflo Operations
+      </p>
+    </aside>
 
-  <section class="card">
-    <h2>Preview</h2>
-    <p id="previewNote" class="muted">Drop a CSV to see the first certificate.</p>
-    <img id="preview" class="preview" alt="Certificate preview" hidden>
-  </section>
-
+  </div>
 </main>
 
 <script src="vendor/papaparse.min.js"></script>
