@@ -49,6 +49,12 @@ function alreadyUnlocked() {
   try { return localStorage.getItem(STORE_KEY) === HASH_HEX; } catch { return false; }
 }
 
+/** Sign out: forget the unlock and show the gate again. */
+export function lock() {
+  try { localStorage.removeItem(STORE_KEY); } catch { /* ignore */ }
+  location.replace(location.pathname);
+}
+
 export function guard() {
   if (alreadyUnlocked()) {
     document.body.classList.remove('locked');

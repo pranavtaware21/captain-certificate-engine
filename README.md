@@ -7,11 +7,20 @@ GitHub Pages and the whole ops team can use it from a link.
 
 ## How to use it
 
-1. Open the page.
-2. Drop in a CSV (one row per captain).
-3. Confirm the column mapping — headers are auto-detected.
-4. Pick formats (PDF / PNG), quality, and the date to print.
-5. Hit **Generate**. The ZIP downloads when it's done.
+1. Open the page and unlock it (see **Access**).
+2. Drop a CSV anywhere on the window.
+3. Confirm the column mapping — headers are auto-detected, and each row's own
+   value is shown under the picker so a wrong column is obvious at a glance.
+4. Flick through every captain with `←` / `→` before committing to a run; click
+   the sheet to see it at actual size.
+5. Pick formats and quality, then **Generate** (or `⌘⏎`). The ZIP downloads, and
+   a summary reports how many were made, how many files, how big, and which rows
+   were skipped.
+
+The interface is a two-pane press room: controls on the left, the certificate lit
+on a dark stage on the right, because print judgements are easier against ink than
+against more paper. On a phone the sheet sits on top with the controls beneath and
+the generate button pinned to the bottom.
 
 ### CSV
 
