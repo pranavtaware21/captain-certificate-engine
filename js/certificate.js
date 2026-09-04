@@ -8,6 +8,7 @@
 import { FONT_CSS } from './fonts.js';
 import { BG_SVG } from './background.js';
 import { LOGO_PNG } from './logo.js';
+import { DEFAULT_SIGNATURE, SIGNATURE_ASPECT } from './signature.js';
 
 export const PAGE = { w: 841.92, h: 594.96 };
 export const FONT_STYLE_CSS = FONT_CSS;
@@ -75,6 +76,7 @@ const L = {
   sigSubBase:  466.63,
   dateBase:    441.0,        // the date prints in the signing space, above the rule
   sigCx:       [276.35, 565.45],
+  sign:        { w: 118, bottom: 451 },   // overlaps its rule slightly, like a real one
 };
 
 const FIXED = {
@@ -183,7 +185,7 @@ const HEAD = `<style>${FONT_CSS}text{white-space:pre}</style>`
   + '</defs>';
 
 /** Everything on the certificate that never changes between rows. */
-function staticParts() {
+function staticParts(signature = DEFAULT_SIGNATURE) {
   const p = [];
 
   // paper + Mumbai street-map panels + inner hairline frame, straight from the .ai
@@ -230,6 +232,12 @@ function staticParts() {
     text(L.sigCx[0], L.sigSubBase, FIXED.sig[0].sub, T.sigSub, C.rule),
     text(L.sigCx[1], L.sigWhoBase, FIXED.sig[1].who, T.sigWho, C.inkSoft)
   );
+  if (signature) {
+    const h = L.sign.w / SIGNATURE_ASPECT;
+    p.push(`<image x="${n(L.sigCx[0] - L.sign.w / 2)}" y="${n(L.sign.bottom - h)}" `
+      + `width="${n(L.sign.w)}" height="${n(h)}" preserveAspectRatio="xMidYMax meet" `
+      + `href="${signature}"/>`);
+  }
   p.push(CONTENT_CLOSE);
 
   return p;
@@ -313,8 +321,8 @@ function dynamicParts({ name = '', tag = '', achievement = '', date = '', period
 }
 
 /** The static layer on its own (opaque; safe to rasterise once and reuse). */
-export function buildStaticSVG() {
-  return SVG_OPEN + HEAD + staticParts().join('') + '</svg>';
+export function buildStaticSVG(signature = DEFAULT_SIGNATURE) {
+  return SVG_OPEN + HEAD + staticParts(signature).join('') + '</svg>';
 }
 
 /** The per-captain layer on its own (transparent, drawn over the static one). */
@@ -376,9 +384,11 @@ export async function rasterise(svg, scale) {
  * street-map panels) is then rasterised once instead of once per row.
  */
 export async function renderCertificate(fields, scale, cache = {}) {
-  if (!cache.canvas || cache.scale !== scale) {
-    cache.canvas = await rasterise(buildStaticSVG(), scale);
+  const signature = fields.signature ?? DEFAULT_SIGNATURE;
+  if (!cache.canvas || cache.scale !== scale || cache.signature !== signature) {
+    cache.canvas = await rasterise(buildStaticSVG(signature), scale);
     cache.scale = scale;
+    cache.signature = signature;
   }
   const canvas = document.createElement('canvas');
   canvas.width = cache.canvas.width;

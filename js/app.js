@@ -2,6 +2,7 @@
 import { renderCertificate, ensureFonts, PAGE } from './certificate.js';
 import { LOGO_PNG } from './logo.js';
 import { guard, lock } from './gate.js';
+import { DEFAULT_SIGNATURE } from './signature.js';
 
 const $ = (id) => document.getElementById(id);
 
@@ -25,6 +26,7 @@ const state = {
   busy: false,
   zip: null,          // last ZIP blob, so it can be downloaded again
   zipName: '',
+  signature: DEFAULT_SIGNATURE,
 };
 
 const previewCache = {};   // rasterised static artwork for the stage
@@ -211,6 +213,7 @@ async function showRow(i) {
     achievement: rowValue(row, 'achievement'),
     date: $('dateText').value.trim(),
     period: $('periodText').value.trim(),
+    signature: state.signature,
     placeholders: true,
   }, 1.7, previewCache);
   if (token !== showToken) return;              // a newer row won the race
@@ -268,6 +271,7 @@ async function generate() {
       achievement: rowValue(row, 'achievement'),
       date,
       period,
+      signature: state.signature,
     }, scale, outputCache);
 
     let base = `Certificate - ${safeFilename(name)}`;
@@ -359,6 +363,43 @@ function reset() {
   note('Drop a CSV to begin — ⌘⏎ to generate.');
 }
 
+/* ---------- signature ---------- */
+
+/** PNG only: anything else keeps transparency guesswork out of the sheet. */
+function loadSignature(file) {
+  if (!file) return;
+  const isPng = file.type === 'image/png' || /\.png$/i.test(file.name);
+  if (!isPng) {
+    signNote(`${file.name} is not a PNG. Save the signature as a PNG with a transparent background.`, true);
+    return;
+  }
+  const reader = new FileReader();
+  reader.onload = () => {
+    state.signature = String(reader.result);
+    $('signPreview').src = state.signature;
+    $('signReset').hidden = false;
+    signNote(file.name);
+    refreshStage();
+  };
+  reader.onerror = () => signNote('That file could not be read.', true);
+  reader.readAsDataURL(file);
+}
+
+function resetSignature() {
+  state.signature = DEFAULT_SIGNATURE;
+  $('signPreview').src = DEFAULT_SIGNATURE;
+  $('signReset').hidden = true;
+  $('signFile').value = '';
+  signNote('Default signature');
+  refreshStage();
+}
+
+function signNote(msg, bad = false) {
+  const el = $('signNote');
+  el.querySelector('i').textContent = msg;
+  el.style.color = bad ? 'var(--bad)' : '';
+}
+
 /* ---------- zoom ---------- */
 
 function openZoom() {
@@ -403,6 +444,11 @@ function wire() {
   $('againBtn').addEventListener('click', download);
   $('resetBtn').addEventListener('click', reset);
   $('lockBtn').addEventListener('click', lock);
+
+  $('signPreview').src = DEFAULT_SIGNATURE;
+  $('signPick').addEventListener('click', () => $('signFile').click());
+  $('signFile').addEventListener('change', (e) => loadSignature(e.target.files[0]));
+  $('signReset').addEventListener('click', resetSignature);
 
   $('prevRow').addEventListener('click', () => showRow(state.cursor - 1));
   $('nextRow').addEventListener('click', () => showRow(state.cursor + 1));

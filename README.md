@@ -99,6 +99,10 @@ artwork cannot be filled in directly. It was rebuilt instead:
 - **Type** (`js/certificate.js`) — re-typeset in the original fonts. Every size, baseline,
   letter-spacing and rule position was measured off the source file, then checked against a
   300 dpi render of it: all runs land within ~1 pt (0.35 mm).
+- **Signature** — the authorised signature prints above its rule on every
+  certificate, from `js/signature.js`. It can be replaced at run time from the
+  panel (PNG only, so transparency is not left to chance); the replacement lives
+  in the page for that session and "Default" puts the original back.
 - **Colour** — the artwork's near-black is printed in the Cityflo brand navy
   (`#00253f`, design system P-300), with P-200 `#2b4a60` for secondary text. Gold
   and the hairline rules stay exactly as the .ai has them.
@@ -138,6 +142,7 @@ js/gate.js            passcode gate (hashed; a speed bump, see HOSTING.md)
 js/certificate.js     the template: geometry, type, SVG builder, rasteriser
 js/background.js      background artwork extracted from the .ai
 js/logo.js            Cityflo wordmark
+js/signature.js       default authorised signature (navy, trimmed PNG)
 js/fonts.js           embedded Fraunces + Archivo subsets
 vendor/               PapaParse, JSZip, jsPDF
 template.csv          blank CSV with just the headers

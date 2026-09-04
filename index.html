@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Cityflo — Captain Certificate Engine</title>
 <meta name="description" content="Upload a CSV of Cityflo captains, get every Certificate of Excellence back as one ZIP.">
-<link rel="stylesheet" href="app.css?v=7">
+<link rel="stylesheet" href="app.css?v=8">
 </head>
 <body class="locked">
 
@@ -119,6 +119,19 @@
             <label for="dateText">Date &mdash; day, month, year</label>
             <input id="dateText" type="text" placeholder="07 SEPTEMBER, 2026" autocomplete="off">
             <p class="sample"><b>&rarr;</b><i id="dateEcho"></i></p>
+          </div>
+
+          <div class="field">
+            <label>Signature &mdash; PNG only</label>
+            <div class="signRow">
+              <span class="signWell"><img id="signPreview" alt="Current signature"></span>
+              <div class="signBtns">
+                <button id="signPick" class="btn" type="button">Replace</button>
+                <button id="signReset" class="btn ghost" type="button" hidden>Default</button>
+              </div>
+            </div>
+            <input id="signFile" type="file" accept="image/png,.png" hidden>
+            <p id="signNote" class="sample"><b>&rarr;</b><i>Default signature</i></p>
           </div>
         </div>
       </section>
