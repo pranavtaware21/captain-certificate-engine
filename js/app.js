@@ -31,11 +31,13 @@ const DPI = { print: 300, standard: 200, light: 150 };
 const DESIGNS = {
   classic: {
     label: 'Captain Excellence', eyebrow: 'Captain Recognition', mod: classic, period: true,
+    signature: DEFAULT_SIGNATURE,
     fonts: 'Fraunces & Archivo', zip: 'captain-certificates',
     fields: [['name', 'Name', true], ['tag', 'Tag', false], ['achievement', 'Achievement', false]],
   },
   oct26: {
     label: 'Team Achievement', eyebrow: 'Team Recognition', mod: oct26, period: false,
+    signature: oct26.SIGNATURE_PREVIEW,
     fonts: 'Alex Brush & TT Norms', zip: 'achievement-certificates',
     fields: [['name', 'Name', true], ['tag', 'Award', false], ['achievement', 'Citation', false],
       ['closing', 'Closing line', false]],
@@ -428,7 +430,7 @@ function loadSignature(file) {
 
 function resetSignature() {
   state.signature = DEFAULT_SIGNATURE;
-  $('signPreview').src = DEFAULT_SIGNATURE;
+  $('signPreview').src = design().signature;
   $('signReset').hidden = true;
   $('signFile').value = '';
   signNote('Default signature');
@@ -453,6 +455,7 @@ function setDesign(key) {
   $('periodField').hidden = !design().period;
   $('designFonts').textContent = design().fonts;
   $('brandEyebrow').textContent = design().eyebrow;
+  if (state.signature === DEFAULT_SIGNATURE) $('signPreview').src = design().signature;
   for (const el of document.querySelectorAll('.spec[data-design]')) el.hidden = el.dataset.design !== key;
   // each certificate takes its own CSV: switching drops the one that was loaded
   if (changed && state.rows.length) reset();
@@ -504,7 +507,6 @@ function wire() {
   $('resetBtn').addEventListener('click', reset);
   $('lockBtn').addEventListener('click', lock);
 
-  $('signPreview').src = DEFAULT_SIGNATURE;
   $('signPick').addEventListener('click', () => $('signFile').click());
   $('signFile').addEventListener('change', (e) => loadSignature(e.target.files[0]));
   $('signReset').addEventListener('click', resetSignature);

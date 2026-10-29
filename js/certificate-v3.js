@@ -45,6 +45,10 @@ const L = {
 
 const LEAD_IN = 'is awarded - ';
 
+/** The artwork's own signature as a small image, for the app's signature well. */
+export const SIGNATURE_PREVIEW = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(
+  '<svg xmlns="http://www.w3.org/2000/svg" viewBox="498 458 143 61">' + SIG_SVG_V3 + '</svg>');
+
 /* ---------- text measurement ---------- */
 
 let _ctx = null;
