@@ -1,5 +1,6 @@
 /* CSV in, ZIP of certificates out. Everything runs in the browser. */
-import { renderCertificate, ensureFonts, PAGE } from './certificate.js';
+import * as classic from './certificate.js';
+import * as oct26 from './certificate-v3.js';
 import { LOGO_PNG } from './logo.js';
 import { guard, lock } from './gate.js';
 import { DEFAULT_SIGNATURE } from './signature.js';
@@ -7,30 +8,43 @@ import { DEFAULT_SIGNATURE } from './signature.js';
 const $ = (id) => document.getElementById(id);
 
 const DPI = { print: 300, standard: 200, light: 150 };
+
+/* Certificate designs. Each module exposes PAGE, renderCertificate, ensureFonts. */
+const DESIGNS = {
+  classic: { label: 'Classic', mod: classic, period: true, fonts: 'Fraunces & Archivo' },
+  oct26: { label: 'Oct 2026', mod: oct26, period: false, fonts: 'Alex Brush & TT Norms' },
+};
+const DESIGN_KEY = 'cf-cert-design';
+const savedDesign = () => { try { return localStorage.getItem(DESIGN_KEY); } catch { return null; } };
 const GUESS = {
   name: ['name', 'captain_name', 'captain name', 'captain', 'full_name', 'full name', 'driver_name', 'driver name'],
   tag: ['tag', 'badge', 'tag_name', 'tag name', 'award', 'title'],
   achievement: ['achievement', 'achievement_line', 'achievement line', 'citation', 'reason', 'tag_reason', 'note'],
+  closing: ['closing', 'closing_line', 'closing line', 'sign_off', 'signoff', 'thanks', 'footer'],
 };
 const FIELDS = [
   ['name', 'Name', true],
   ['tag', 'Tag', false],
   ['achievement', 'Achievement', false],
+  ['closing', 'Closing line', false],
 ];
 
 const state = {
   rows: [],
   headers: [],
-  map: { name: '', tag: '', achievement: '' },
+  map: { name: '', tag: '', achievement: '', closing: '' },
   cursor: 0,          // which row the stage is showing
   busy: false,
   zip: null,          // last ZIP blob, so it can be downloaded again
   zipName: '',
   signature: DEFAULT_SIGNATURE,
+  design: DESIGNS[savedDesign()] ? savedDesign() : 'classic',
 };
 
-const previewCache = {};   // rasterised static artwork for the stage
-const outputCache = {};    // ... and for the output run (different scale)
+const previewCaches = {};  // rasterised static artwork for the stage, per design
+const outputCaches = {};   // ... and for the output run (different scale)
+const design = () => DESIGNS[state.design];
+const cacheFor = (store) => (store[state.design] ||= {});
 
 /* ---------- small helpers ---------- */
 
@@ -96,6 +110,7 @@ function loadFile(file) {
         name: guess(headers, GUESS.name),
         tag: guess(headers, GUESS.tag),
         achievement: guess(headers, GUESS.achievement),
+        closing: guess(headers, GUESS.closing),
       };
 
       $('drop').hidden = true;
@@ -124,7 +139,7 @@ function reportMapping() {
     return;
   }
   $('go').disabled = state.busy;
-  const missing = FIELDS.filter(([k, , req]) => !req && !state.map[k]).map(([, label]) => label.toLowerCase());
+  const missing = FIELDS.filter(([k, , req]) => !req && !state.map[k] && (k !== 'closing' || state.design === 'oct26')).map(([, label]) => label.toLowerCase());
   status(missing.length
     ? `${n} row${n === 1 ? '' : 's'} loaded. No ${missing.join(' or ')} column — that part is left off.`
     : `${n} row${n === 1 ? '' : 's'} loaded and mapped.`,
@@ -207,15 +222,16 @@ async function showRow(i) {
   $('stageName').textContent = named(row);
   repaintSamples();
 
-  const canvas = await renderCertificate({
+  const canvas = await design().mod.renderCertificate({
     name: rowValue(row, 'name'),
     tag: rowValue(row, 'tag'),
     achievement: rowValue(row, 'achievement'),
+    closing: rowValue(row, 'closing'),
     date: $('dateText').value.trim(),
     period: $('periodText').value.trim(),
     signature: state.signature,
     placeholders: true,
-  }, 1.7, previewCache);
+  }, 1.7, cacheFor(previewCaches));
   if (token !== showToken) return;              // a newer row won the race
 
   const img = $('preview');
@@ -248,6 +264,9 @@ async function generate() {
   const date = $('dateText').value.trim();
   const period = $('periodText').value.trim();
   const { jsPDF } = window.jspdf;
+  const { mod } = design();
+  const page = mod.PAGE;
+  const cache = cacheFor(outputCaches);
   const zip = new JSZip();
   const used = new Map();
   const skipped = [];
@@ -265,14 +284,15 @@ async function generate() {
     const name = rowValue(row, 'name');
     if (!name) { skipped.push(i + 2); continue; }
 
-    const canvas = await renderCertificate({
+    const canvas = await mod.renderCertificate({
       name,
       tag: rowValue(row, 'tag'),
       achievement: rowValue(row, 'achievement'),
+      closing: rowValue(row, 'closing'),
       date,
       period,
       signature: state.signature,
-    }, scale, outputCache);
+    }, scale, cache);
 
     let base = `Certificate - ${safeFilename(name)}`;
     const seen = (used.get(base.toLowerCase()) || 0) + 1;
@@ -283,8 +303,8 @@ async function generate() {
       zip.file(`png/${base}.png`, await new Promise((r) => canvas.toBlob(r, 'image/png')));
     }
     if (wantPdf) {
-      const doc = new jsPDF({ orientation: 'landscape', unit: 'pt', format: [PAGE.w, PAGE.h], compress: true });
-      doc.addImage(canvas.toDataURL('image/jpeg', 0.95), 'JPEG', 0, 0, PAGE.w, PAGE.h, undefined, 'FAST');
+      const doc = new jsPDF({ orientation: 'landscape', unit: 'pt', format: [page.w, page.h], compress: true });
+      doc.addImage(canvas.toDataURL('image/jpeg', 0.95), 'JPEG', 0, 0, page.w, page.h, undefined, 'FAST');
       zip.file(`pdf/${base}.pdf`, doc.output('blob'));
     }
 
@@ -400,6 +420,19 @@ function signNote(msg, bad = false) {
   el.style.color = bad ? 'var(--bad)' : '';
 }
 
+/* ---------- design ---------- */
+
+function setDesign(key) {
+  if (!DESIGNS[key]) return;
+  state.design = key;
+  try { localStorage.setItem(DESIGN_KEY, key); } catch { /* private mode: not remembered */ }
+  const radio = document.querySelector(`input[name=design][value="${key}"]`);
+  if (radio) radio.checked = true;
+  $('periodField').hidden = !design().period;
+  $('designFonts').textContent = design().fonts;
+  if (state.rows.length) { reportMapping(); refreshStage(); }
+}
+
 /* ---------- zoom ---------- */
 
 function openZoom() {
@@ -450,6 +483,11 @@ function wire() {
   $('signFile').addEventListener('change', (e) => loadSignature(e.target.files[0]));
   $('signReset').addEventListener('click', resetSignature);
 
+  for (const r of document.querySelectorAll('input[name=design]')) {
+    r.addEventListener('change', (e) => setDesign(e.target.value));
+  }
+  setDesign(state.design);
+
   $('prevRow').addEventListener('click', () => showRow(state.cursor - 1));
   $('nextRow').addEventListener('click', () => showRow(state.cursor + 1));
   $('zoomBtn').addEventListener('click', openZoom);
@@ -474,6 +512,6 @@ function wire() {
   const logo = $('brandLogo');
   if (logo) { logo.src = LOGO_PNG; logo.classList.add('in'); }
   status('Setting the type…');
-  await ensureFonts();
+  await Promise.all(Object.values(DESIGNS).map((d) => d.mod.ensureFonts()));
   status('Ready. Drop a CSV to start.');
 })();

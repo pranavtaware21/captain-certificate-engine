@@ -108,9 +108,16 @@
 
       <!-- 3 · wording -->
       <section class="step" id="step3" hidden>
-        <div class="stepHead"><span class="num">3</span><h2>Month &amp; date</h2></div>
+        <div class="stepHead"><span class="num">3</span><h2>Design &amp; date</h2></div>
         <div class="stepBody">
           <div class="field">
+            <label>Design</label>
+            <div class="seg">
+              <label><input type="radio" name="design" value="classic" checked><span>Classic</span></label>
+              <label><input type="radio" name="design" value="oct26"><span>Oct 2026</span></label>
+            </div>
+          </div>
+          <div class="field" id="periodField">
             <label for="periodText">Awarded for &mdash; month &amp; year</label>
             <input id="periodText" type="text" placeholder="AUGUST 26" autocomplete="off">
             <p class="sample"><b>&rarr;</b><i id="periodEcho"></i></p>
@@ -218,7 +225,7 @@
       <img id="preview" class="sheet" alt="Certificate preview" hidden>
     </div>
 
-    <p class="stageFoot">A4 landscape &middot; Fraunces &amp; Archivo &middot; nothing leaves this browser</p>
+    <p class="stageFoot">A4 landscape &middot; <span id="designFonts">Fraunces &amp; Archivo</span> &middot; nothing leaves this browser</p>
   </main>
 
 </div>
