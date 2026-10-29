@@ -4,6 +4,24 @@ import * as oct26 from './certificate-v3.js';
 import { LOGO_PNG } from './logo.js';
 import { guard, lock } from './gate.js';
 import { DEFAULT_SIGNATURE } from './signature.js';
+import { FONT_CSS_V3 } from './fonts-v3.js';
+
+/* The page is set in the Team Achievement artwork's own type: TT Norms Pro as one
+   weighted family for the interface, Alex Brush for the script accent. */
+(function uiFonts() {
+  const face = { CFNormsRg: ['CFUI', 400, 'normal'], CFNormsMd: ['CFUI', 600, 'normal'],
+    CFNormsIt: ['CFUI', 400, 'italic'], CFNormsXb: ['CFUI', 800, 'normal'], CFAlexBrush: ['CFScript', 400, 'normal'] };
+  const css = FONT_CSS_V3.split('@font-face').filter(Boolean).map((rule) => {
+    const fam = rule.match(/font-family:'([^']+)'/)[1];
+    if (!face[fam]) return '';
+    const [name, weight, style] = face[fam];
+    return '@font-face' + rule.replace(`'${fam}'`, `'${name}'`)
+      .replace('font-weight:400', `font-weight:${weight}`).replace('font-style:normal', `font-style:${style}`);
+  }).join('');
+  const st = document.createElement('style');
+  st.textContent = css;
+  document.head.appendChild(st);
+})();
 
 const $ = (id) => document.getElementById(id);
 
