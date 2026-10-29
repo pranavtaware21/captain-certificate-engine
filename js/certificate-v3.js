@@ -126,7 +126,7 @@ function dynamicParts({ name = '', tag = '', achievement = '', closing = '', dat
   const p = [];
 
   // name: Alex Brush, shrinks only when it would run into the gold bars
-  const nameText = String(name || '').trim() || (placeholders ? 'Captain Name' : 'Captain');
+  const nameText = String(name || '').trim() || (placeholders ? 'Full Name' : '');
   let nameT = { ...T.name };
   while (nameT.size > L.nameMinSize && advance(nameText, nameT) > L.nameMaxW) {
     nameT = { ...nameT, size: nameT.size - 0.5 };

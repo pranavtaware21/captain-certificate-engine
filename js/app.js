@@ -11,23 +11,26 @@ const DPI = { print: 300, standard: 200, light: 150 };
 
 /* Certificate designs. Each module exposes PAGE, renderCertificate, ensureFonts. */
 const DESIGNS = {
-  classic: { label: 'Classic', mod: classic, period: true, fonts: 'Fraunces & Archivo' },
-  oct26: { label: 'Oct 2026', mod: oct26, period: false, fonts: 'Alex Brush & TT Norms' },
+  classic: {
+    label: 'Captain Excellence', eyebrow: 'Captain Recognition', mod: classic, period: true,
+    fonts: 'Fraunces & Archivo', zip: 'captain-certificates',
+    fields: [['name', 'Name', true], ['tag', 'Tag', false], ['achievement', 'Achievement', false]],
+  },
+  oct26: {
+    label: 'Team Achievement', eyebrow: 'Team Recognition', mod: oct26, period: false,
+    fonts: 'Alex Brush & TT Norms', zip: 'achievement-certificates',
+    fields: [['name', 'Name', true], ['tag', 'Award', false], ['achievement', 'Citation', false],
+      ['closing', 'Closing line', false]],
+  },
 };
 const DESIGN_KEY = 'cf-cert-design';
 const savedDesign = () => { try { return localStorage.getItem(DESIGN_KEY); } catch { return null; } };
 const GUESS = {
   name: ['name', 'captain_name', 'captain name', 'captain', 'full_name', 'full name', 'driver_name', 'driver name'],
-  tag: ['tag', 'badge', 'tag_name', 'tag name', 'award', 'title'],
+  tag: ['tag', 'badge', 'tag_name', 'tag name', 'award', 'award_title', 'award title', 'title'],
   achievement: ['achievement', 'achievement_line', 'achievement line', 'citation', 'reason', 'tag_reason', 'note'],
   closing: ['closing', 'closing_line', 'closing line', 'sign_off', 'signoff', 'thanks', 'footer'],
 };
-const FIELDS = [
-  ['name', 'Name', true],
-  ['tag', 'Tag', false],
-  ['achievement', 'Achievement', false],
-  ['closing', 'Closing line', false],
-];
 
 const state = {
   rows: [],
@@ -139,7 +142,7 @@ function reportMapping() {
     return;
   }
   $('go').disabled = state.busy;
-  const missing = FIELDS.filter(([k, , req]) => !req && !state.map[k] && (k !== 'closing' || state.design === 'oct26')).map(([, label]) => label.toLowerCase());
+  const missing = design().fields.filter(([k, , req]) => !req && !state.map[k]).map(([, label]) => label.toLowerCase());
   status(missing.length
     ? `${n} row${n === 1 ? '' : 's'} loaded. No ${missing.join(' or ')} column — that part is left off.`
     : `${n} row${n === 1 ? '' : 's'} loaded and mapped.`,
@@ -150,7 +153,7 @@ function buildMapping() {
   const wrap = $('mapping');
   wrap.replaceChildren();
 
-  for (const [key, labelText, required] of FIELDS) {
+  for (const [key, labelText, required] of design().fields) {
     const id = `map-${key}`;
     const field = document.createElement('div');
     field.className = 'field';
@@ -209,9 +212,8 @@ function echoWording() {
 let showToken = 0;
 async function showRow(i) {
   const total = state.rows.length;
-  if (!total) return;
-  state.cursor = Math.max(0, Math.min(i, total - 1));
-  const row = state.rows[state.cursor];
+  state.cursor = Math.max(0, Math.min(i, Math.max(total - 1, 0)));
+  const row = state.rows[state.cursor] || {};   // no CSV yet: a sample sheet
   const token = ++showToken;
 
   $('rowNav').hidden = total < 2;
@@ -219,7 +221,7 @@ async function showRow(i) {
   $('rowTotal').textContent = String(total);
   $('prevRow').disabled = state.cursor === 0;
   $('nextRow').disabled = state.cursor === total - 1;
-  $('stageName').textContent = named(row);
+  $('stageName').textContent = total ? named(row) : `${design().label} · sample`;
   repaintSamples();
 
   const canvas = await design().mod.renderCertificate({
@@ -323,7 +325,7 @@ async function generate() {
   });
 
   state.zip = blob;
-  state.zipName = `captain-certificates-${new Date().toISOString().slice(0, 10)}.zip`;
+  state.zipName = `${design().zip}-${new Date().toISOString().slice(0, 10)}.zip`;
   download();
 
   const made = total - skipped.length;
@@ -381,6 +383,7 @@ function reset() {
   $('stageName').textContent = 'Preview';
   status('Ready. Drop a CSV to start.');
   note('Drop a CSV to begin — ⌘⏎ to generate.');
+  showRow(0);
 }
 
 /* ---------- signature ---------- */
@@ -423,14 +426,19 @@ function signNote(msg, bad = false) {
 /* ---------- design ---------- */
 
 function setDesign(key) {
-  if (!DESIGNS[key]) return;
+  if (!DESIGNS[key] || state.busy) return;
+  const changed = key !== state.design;
   state.design = key;
   try { localStorage.setItem(DESIGN_KEY, key); } catch { /* private mode: not remembered */ }
   const radio = document.querySelector(`input[name=design][value="${key}"]`);
   if (radio) radio.checked = true;
   $('periodField').hidden = !design().period;
   $('designFonts').textContent = design().fonts;
-  if (state.rows.length) { reportMapping(); refreshStage(); }
+  $('brandEyebrow').textContent = design().eyebrow;
+  for (const el of document.querySelectorAll('.spec[data-design]')) el.hidden = el.dataset.design !== key;
+  // each certificate takes its own CSV: switching drops the one that was loaded
+  if (changed && state.rows.length) reset();
+  else refreshStage();
 }
 
 /* ---------- zoom ---------- */
@@ -514,4 +522,5 @@ function wire() {
   status('Setting the type…');
   await Promise.all(Object.values(DESIGNS).map((d) => d.mod.ensureFonts()));
   status('Ready. Drop a CSV to start.');
+  showRow(0);
 })();

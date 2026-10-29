@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Cityflo — Captain Certificate Engine</title>
 <meta name="description" content="Upload a CSV of Cityflo captains, get every Certificate of Excellence back as one ZIP.">
-<link rel="stylesheet" href="app.css?v=8">
+<link rel="stylesheet" href="app.css?v=9">
 </head>
 <body class="locked">
 
@@ -37,7 +37,7 @@
     <header class="brand">
       <img id="brandLogo" class="brandLogo" alt="Cityflo" width="82" height="30">
       <div class="brandText">
-        <p class="eyebrow">Captain Recognition</p>
+        <p class="eyebrow" id="brandEyebrow">Captain Recognition</p>
         <h1>Certificate <em>Engine</em></h1>
       </div>
       <button id="lockBtn" class="iconBtn" type="button" title="Lock the page" aria-label="Lock the page">
@@ -52,8 +52,18 @@
 
       <!-- 1 · file -->
       <section class="step" id="step1">
-        <div class="stepHead"><span class="num">1</span><h2>The CSV</h2></div>
+        <div class="stepHead"><span class="num">1</span><h2>Certificate &amp; CSV</h2></div>
         <div class="stepBody">
+          <div class="kinds" role="radiogroup" aria-label="Which certificate">
+            <label class="kind">
+              <input type="radio" name="design" value="classic" checked>
+              <span><b>Captain Excellence</b><i>Monthly awards for captains</i></span>
+            </label>
+            <label class="kind">
+              <input type="radio" name="design" value="oct26">
+              <span><b>Team Achievement</b><i>Awards for the Cityflo team</i></span>
+            </label>
+          </div>
           <div id="drop" class="drop" tabindex="0" role="button" aria-label="Choose or drop a CSV file">
             <svg class="dropIcon" viewBox="0 0 24 24" aria-hidden="true">
               <path d="M12 15.5V4m0 0L8.2 7.8M12 4l3.8 3.8" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
@@ -72,7 +82,7 @@
           <input id="csv" type="file" accept=".csv,text/csv" hidden>
           <p id="status" class="status">Warming up&hellip;</p>
 
-          <details class="spec">
+          <details class="spec" data-design="classic">
             <summary>What the file should look like</summary>
             <div class="specBody">
               <div class="specTable">
@@ -95,6 +105,30 @@
               </p>
             </div>
           </details>
+
+          <details class="spec" data-design="oct26" hidden>
+            <summary>What the file should look like</summary>
+            <div class="specBody">
+              <div class="specTable">
+                <table>
+                  <thead><tr><th>name</th><th>award</th><th>citation</th><th>closing</th></tr></thead>
+                  <tbody>
+                    <tr><td>Kanchan Bhosale</td><td>Performance Pillar</td><td>In recognition of your consistent performance&hellip;</td><td>Thank you for consistently raising the bar!</td></tr>
+                  </tbody>
+                </table>
+              </div>
+              <ul class="specList">
+                <li><code>name</code> required &mdash; rows without one are skipped</li>
+                <li><code>award</code> printed as &ldquo;is awarded - AWARD&rdquo;</li>
+                <li><code>citation</code> up to two lines of text</li>
+                <li><code>closing</code> optional italic last line</li>
+              </ul>
+              <p class="specGrabs">
+                <a href="achievement-template.csv" download>template.csv</a>
+                <a href="sample-achievement.csv" download>filled example</a>
+              </p>
+            </div>
+          </details>
         </div>
       </section>
 
@@ -108,15 +142,8 @@
 
       <!-- 3 · wording -->
       <section class="step" id="step3" hidden>
-        <div class="stepHead"><span class="num">3</span><h2>Design &amp; date</h2></div>
+        <div class="stepHead"><span class="num">3</span><h2>Month &amp; date</h2></div>
         <div class="stepBody">
-          <div class="field">
-            <label>Design</label>
-            <div class="seg">
-              <label><input type="radio" name="design" value="classic" checked><span>Classic</span></label>
-              <label><input type="radio" name="design" value="oct26"><span>Oct 2026</span></label>
-            </div>
-          </div>
           <div class="field" id="periodField">
             <label for="periodText">Awarded for &mdash; month &amp; year</label>
             <input id="periodText" type="text" placeholder="AUGUST 26" autocomplete="off">
